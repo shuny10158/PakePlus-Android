@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>经纬度转换工具</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px 0;
+            padding: 0 6px;
+            padding-bottom: 120px;
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #333;
+        }
+        .section-title {
+            margin: 8px 0 6px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .input-line {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .input-line label {
+            width: 70px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .input-group {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+        }
+        .input-group input {
+            flex: 3;
+            padding: 6px 8px;
+            font-size: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 0;
+        }
+        .clear-btn {
+            flex: 1;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 2px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .clear-btn:hover {
+            background-color: #c82333;
+        }
+        button {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            font-size: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .copy-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .copy-btn {
+            flex: 1;
+            padding: 6px;
+            background-color: #28a745;
+            border-radius: 4px;
+            border: none;
+            color:#fff;
+            cursor:pointer;
+        }
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+        #preview, #result, #previewDms, #resultDms {
+            margin-top: 8px;
+            padding: 8px 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-line;
+            word-break: break-all;
+            font-size:14px;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: none;
+            z-index: 999;
+        }
+        .divider {
+            margin: 18px 0;
+            border: 0;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">提示</div>
+
+    <h1>经纬度转换</h1>
+
+    <!-- 第一部分：遥控器度分 → 十进制度 -->
+    <div class="section-title">GPS度分输入（遥控器格式）</div>
+    <div class="input-line">
+        <label>纬度 度</label>
+        <div class="input-group">
+            <input type="number" id="latDeg" placeholder="度" oninput="updatePreview()">
+            <button class="clear-btn" onclick="clearInput('latDeg')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>纬度 分</label>
+        <div class="input-group">
+            <input type="number" step="0.001" id="latMin" placeholder="如 57.029" oninput="updatePreview()">
+            <button class="clear-btn" onclick="clearInput('latMin')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>经度 度</label>
+        <div class="input-group">
+            <input type="number" id="lngDeg" placeholder="度" oninput="updatePreview()">
+            <button class="clear-btn" onclick="clearInput('lngDeg')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>经度 分</label>
+        <div class="input-group">
+            <input type="number" step="0.001" id="lngMin" placeholder="如 37.024" oninput="updatePreview()">
+            <button class="clear-btn" onclick="clearInput('lngMin')">清空</button>
+        </div>
+    </div>
+
+    <div id="preview">实时预览：请输入度、分（小数分）</div>
+    <button onclick="dmsToDec()">度分 → 十进制度(WGS84)</button>
+
+    <div id="result">转换结果将显示在这里</div>
+
+    <div class="copy-row">
+        <button class="copy-btn" onclick="copyLat()">复制纬度</button>
+        <button class="copy-btn" onclick="copyLng()">复制经度</button>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 第二部分：度分秒（DMS）→ 十进制度 -->
+    <div class="section-title">度分秒输入（DMS格式）</div>
+    <div class="input-line">
+        <label>纬度 度</label>
+        <div class="input-group">
+            <input type="number" id="dmsLatDeg" placeholder="度" oninput="updatePreviewDms()">
+            <button class="clear-btn" onclick="clearInput('dmsLatDeg')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>纬度 分</label>
+        <div class="input-group">
+            <input type="number" id="dmsLatMin" placeholder="分" oninput="updatePreviewDms()">
+            <button class="clear-btn" onclick="clearInput('dmsLatMin')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>纬度 秒</label>
+        <div class="input-group">
+            <input type="number" step="0.001" id="dmsLatSec" placeholder="秒" oninput="updatePreviewDms()">
+            <button class="clear-btn" onclick="clearInput('dmsLatSec')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>经度 度</label>
+        <div class="input-group">
+            <input type="number" id="dmsLngDeg" placeholder="度" oninput="updatePreviewDms()">
+            <button class="clear-btn" onclick="clearInput('dmsLngDeg')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>经度 分</label>
+        <div class="input-group">
+            <input type="number" id="dmsLngMin" placeholder="分" oninput="updatePreviewDms()">
+            <button class="clear-btn" onclick="clearInput('dmsLngMin')">清空</button>
+        </div>
+    </div>
+    <div class="input-line">
+        <label>经度 秒</label>
+        <div class="input-group">
+            <input type="number" step="0.001" id="dmsLngSec" placeholder="秒" oninput="updatePreviewDms()">
+            <button class="clear-btn" onclick="clearInput('dmsLngSec')">清空</button>
+        </div>
+    </div>
+
+    <div id="previewDms">实时预览：请输入度、分、秒</div>
+    <button onclick="dmsFormatToDec()">度分秒 → 十进制度(WGS84)</button>
+
+    <div id="resultDms">转换结果将显示在这里</div>
+
+    <div class="copy-row">
+        <button class="copy-btn" onclick="copyLatDms()">复制纬度</button>
+        <button class="copy-btn" onclick="copyLngDms()">复制经度</button>
+    </div>
+
+    <script>
+        let lastLat = '';
+        let lastLng = '';
+        let lastLatDms = '';
+        let lastLngDms = '';
+        const toast = document.getElementById('toast');
+
+        // 所有输入框顺序列表，实现自动下一项
+        const inputsOrder = [
+            'latDeg','latMin','lngDeg','lngMin',
+            'dmsLatDeg','dmsLatMin','dmsLatSec',
+            'dmsLngDeg','dmsLngMin','dmsLngSec'
+        ];
+
+        // 回车自动跳到下一个输入框
+        document.querySelectorAll('input').forEach((input, idx) => {
+            input.addEventListener('keydown', function(e) {
+                if(e.key === 'Enter') {
+                    e.preventDefault();
+                    let nowIndex = inputsOrder.indexOf(this.id);
+                    if(nowIndex !== -1 && nowIndex < inputsOrder.length - 1){
+                        document.getElementById(inputsOrder[nowIndex+1]).focus();
+                    }
+                }
+            });
+
+            // 聚焦自动滚动居中，解决键盘遮挡
+            input.addEventListener('focus', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 100);
+            });
+        });
+
+        function clearInput(id) {
+            document.getElementById(id).value = '';
+            updatePreview();
+            updatePreviewDms();
+        }
+
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 1200);
+        }
+
+        function dmsToDecimal(d, m) {
+            d = parseFloat(d || 0);
+            m = parseFloat(m || 0);
+            return d + m / 60;
+        }
+
+        function dmsFormatToDecimal(d, m, s) {
+            d = parseFloat(d || 0);
+            m = parseFloat(m || 0);
+            s = parseFloat(s || 0);
+            return d + m / 60 + s / 3600;
+        }
+
+        function updatePreview() {
+            const latD = document.getElementById('latDeg').value;
+            const latM = document.getElementById('latMin').value;
+            const lngD = document.getElementById('lngDeg').value;
+            const lngM = document.getElementById('lngMin').value;
+
+            const lat = dmsToDecimal(latD, latM);
+            const lng = dmsToDecimal(lngD, lngM);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                document.getElementById('preview').textContent =
+                    `纬度计算：${latD || 0} + ${latM || 0}/60 = ${lat.toFixed(6)}\n` +
+                    `经度计算：${lngD || 0} + ${lngM || 0}/60 = ${lng.toFixed(6)}`;
+            } else {
+                document.getElementById('preview').textContent = '实时预览：请输入度、分（小数分）';
+            }
+        }
+
+        function updatePreviewDms() {
+            const latD = document.getElementById('dmsLatDeg').value;
+            const latM = document.getElementById('dmsLatMin').value;
+            const latS = document.getElementById('dmsLatSec').value;
+            const lngD = document.getElementById('dmsLngDeg').value;
+            const lngM = document.getElementById('dmsLngMin').value;
+            const lngS = document.getElementById('dmsLngSec').value;
+
+            const lat = dmsFormatToDecimal(latD, latM, latS);
+            const lng = dmsFormatToDecimal(lngD, lngM, lngS);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                document.getElementById('previewDms').textContent =
+                    `纬度计算：${latD || 0} + ${latM || 0}/60 + ${latS || 0}/3600 = ${lat.toFixed(6)}\n` +
+                    `经度计算：${lngD || 0} + ${lngM || 0}/60 + ${lngS || 0}/3600 = ${lng.toFixed(6)}`;
+            } else {
+                document.getElementById('previewDms').textContent = '实时预览：请输入度、分、秒';
+            }
+        }
+
+        function dmsToDec() {
+            const lat = dmsToDecimal(document.getElementById('latDeg').value, document.getElementById('latMin').value);
+            const lng = dmsToDecimal(document.getElementById('lngDeg').value, document.getElementById('lngMin').value);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                document.getElementById('result').textContent = '请输入有效的度和分';
+                lastLat = ''; lastLng = '';
+                return;
+            }
+
+            lastLat = lat.toFixed(6);
+            lastLng = lng.toFixed(6);
+            document.getElementById('result').textContent = `十进制度（WGS84）：\n纬度: ${lastLat}\n经度: ${lastLng}`;
+        }
+
+        function dmsFormatToDec() {
+            const lat = dmsFormatToDecimal(
+                document.getElementById('dmsLatDeg').value,
+                document.getElementById('dmsLatMin').value,
+                document.getElementById('dmsLatSec').value
+            );
+            const lng = dmsFormatToDecimal(
+                document.getElementById('dmsLngDeg').value,
+                document.getElementById('dmsLngMin').value,
+                document.getElementById('dmsLngSec').value
+            );
+
+            if (isNaN(lat) || isNaN(lng)) {
+                document.getElementById('resultDms').textContent = '请输入有效的度、分、秒';
+                lastLatDms = ''; lastLngDms = '';
+                return;
+            }
+
+            lastLatDms = lat.toFixed(6);
+            lastLngDms = lng.toFixed(6);
+            document.getElementById('resultDms').textContent = `十进制度（WGS84）：\n纬度: ${lastLatDms}\n经度: ${lastLngDms}`;
+        }
+
+        function copyLat() {
+            if (!lastLat) return showToast('暂无数据可复制');
+            navigator.clipboard.writeText(lastLat);
+            showToast('纬度已复制');
+        }
+        function copyLng() {
+            if (!lastLng) return showToast('暂无数据可复制');
+            navigator.clipboard.writeText(lastLng);
+            showToast('经度已复制');
+        }
+        function copyLatDms() {
+            if (!lastLatDms) return showToast('暂无数据可复制');
+            navigator.clipboard.writeText(lastLatDms);
+            showToast('纬度已复制');
+        }
+        function copyLngDms() {
+            if (!lastLngDms) return showToast('暂无数据可复制');
+            navigator.clipboard.writeText(lastLngDms);
+            showToast('经度已复制');
+        }
+    </script>
+</body>
+</html>
