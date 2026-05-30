@@ -135,7 +135,6 @@
 
     <h1>经纬度转换</h1>
 
-    <!-- 第一部分：遥控器度分 → 十进制度 -->
     <div class="section-title">GPS度分输入（遥控器格式）</div>
     <div class="input-line">
         <label>纬度 度</label>
@@ -178,7 +177,6 @@
 
     <hr class="divider">
 
-    <!-- 第二部分：度分秒（DMS）→ 十进制度 -->
     <div class="section-title">度分秒输入（DMS格式）</div>
     <div class="input-line">
         <label>纬度 度</label>
@@ -240,14 +238,12 @@
         let lastLngDms = '';
         const toast = document.getElementById('toast');
 
-        // 所有输入框顺序列表，实现自动下一项
         const inputsOrder = [
             'latDeg','latMin','lngDeg','lngMin',
             'dmsLatDeg','dmsLatMin','dmsLatSec',
             'dmsLngDeg','dmsLngMin','dmsLngSec'
         ];
 
-        // 回车自动跳到下一个输入框
         document.querySelectorAll('input').forEach((input, idx) => {
             input.addEventListener('keydown', function(e) {
                 if(e.key === 'Enter') {
@@ -259,7 +255,6 @@
                 }
             });
 
-            // 聚焦自动滚动居中，解决键盘遮挡
             input.addEventListener('focus', function() {
                 setTimeout(() => {
                     this.scrollIntoView({ behavior: 'smooth', block: 'center' });
