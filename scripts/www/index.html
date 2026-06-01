@@ -18,7 +18,8 @@
             font-family: Arial, sans-serif;
             margin: 20px 0;
             padding: 0 6px;
-            padding-bottom: 120px;
+            padding-bottom: 60px;
+            background-color: #f8f9fa;
         }
         h1 {
             font-size: 24px;
@@ -26,21 +27,37 @@
             margin-bottom: 25px;
             color: #333;
         }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
         .section-title {
             margin: 8px 0 6px;
             font-size: 16px;
             font-weight: bold;
+            color: #495057;
+        }
+        .input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
         }
         .input-line {
             display: flex;
             gap: 6px;
             align-items: center;
-            margin-bottom: 6px;
+            width: calc(50% - 5px);
+            min-width: 250px;
         }
         .input-line label {
             width: 70px;
             font-size: 14px;
             flex-shrink: 0;
+            color: #6c757d;
         }
         .input-group {
             display: flex;
@@ -54,6 +71,16 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             min-width: 0;
+            cursor: text;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .input-group input[type="number"] {
+            inputmode: numeric;
         }
         .clear-btn {
             flex: 1;
@@ -66,6 +93,7 @@
             cursor: pointer;
             white-space: nowrap;
             text-align: center;
+            transition: background-color 0.2s;
         }
         .clear-btn:hover {
             background-color: #c82333;
@@ -80,11 +108,37 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
         button:hover {
             background-color: #0056b3;
         }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .stop-location-btn {
+            background-color: #dc3545;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .stop-location-btn:hover:not(:disabled) {
+            background-color: #c82333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+        }
+        .stop-location-btn:disabled {
+            background-color: #6c757d;
+            color: white;
+            transform: none;
+            box-shadow: none;
+        }
         .copy-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .map-row {
             display: flex;
             gap: 10px;
             margin-top: 8px;
@@ -97,11 +151,35 @@
             border: none;
             color:#fff;
             cursor:pointer;
+            transition: background-color 0.2s;
         }
         .copy-btn:hover {
             background-color: #218838;
         }
-        #preview, #result, #previewDms, #resultDms {
+        .copy-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .map-btn {
+            flex: 1;
+            padding: 6px;
+            border-radius: 4px;
+            border: none;
+            color:#fff;
+            cursor:pointer;
+        }
+        .gps-btn {
+            background-color: #17a2b8;
+            transition: background-color 0.2s;
+        }
+        .gps-btn:hover {
+            background-color: #138496;
+        }
+        .gps-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        #preview, #result, #previewDms, #resultDms, #coordResult, #degMinResult {
             margin-top: 8px;
             padding: 8px 10px;
             background-color: #f8f9fa;
@@ -109,6 +187,7 @@
             white-space: pre-line;
             word-break: break-all;
             font-size:14px;
+            border: 1px solid #e9ecef;
         }
         .toast {
             position: fixed;
@@ -121,268 +200,2418 @@
             border-radius: 20px;
             font-size: 14px;
             display: none;
-            z-index: 999;
+            z-index: 9999;
         }
         .divider {
             margin: 18px 0;
             border: 0;
             border-top: 1px solid #eee;
         }
+        select {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .clear-history-btn {
+            width: auto;
+            padding: 4px 8px;
+            font-size: 12px;
+            background-color: #6c757d;
+        }
+        .clear-history-btn:hover {
+            background-color: #5a6268;
+        }
+        .history-item {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            transition: background-color 0.2s;
+        }
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+        .history-item.starred {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+        }
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .history-type {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+        .history-actions {
+            display: flex;
+            gap: 4px;
+        }
+        .action-btn {
+            width: auto;
+            padding: 2px 6px;
+            font-size: 12px;
+            margin: 0;
+        }
+        .star-btn {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .star-btn:hover {
+            background-color: #e0a800;
+        }
+        .star-btn.unstarred {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+        .star-btn.unstarred:hover {
+            background-color: #dee2e6;
+        }
+        .rename-btn {
+            background-color: #17a2b8;
+        }
+        .rename-btn:hover {
+            background-color: #138496;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .history-coords {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .history-time {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+        .history-empty {
+            text-align: center;
+            color: #999;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+        .custom-modal {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .custom-modal-header {
+            background-color: #f8f9fa;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .custom-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #343a40;
+            margin: 0;
+        }
+        .custom-modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            height: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .custom-modal-close:hover {
+            color: #495057;
+        }
+        .custom-modal-body {
+            padding: 20px;
+        }
+        .custom-modal-content {
+            font-size: 16px;
+            color: #495057;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .custom-modal-input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        .custom-modal-input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .custom-modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .custom-modal-btn {
+            padding: 8px 16px;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            min-width: 80px;
+            transition: background-color 0.3s;
+        }
+        .custom-modal-btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .custom-modal-btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .custom-modal-btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .custom-modal-btn-secondary:hover {
+            background-color: #545b62;
+        }
+        .custom-modal-btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .custom-modal-btn-danger:hover {
+            background-color: #c82333;
+        }
+        .location-btn {
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+            margin: 6px 0;
+        }
+        .location-btn:hover {
+            background-color: #218838;
+        }
+        .location-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .location-status {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: block;
+            border: 1px solid #ddd;
+            transition: background-color 0.3s, border-color 0.3s;
+            color: white;
+        }
+        .location-status-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .coordinate-line {
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-poor {
+            background-color: #dc3545;
+            border-color: #c82333;
+        }
+        .status-medium {
+            background-color: #ffc107;
+            border-color: #e0a800;
+            color: #212529;
+        }
+        .status-good {
+            background-color: #28a745;
+            border-color: #218838;
+        }
+        .status-excellent {
+            background-color: #00ffff;
+            border-color: #00cccc;
+            color: #212529;
+        }
+        .status-default {
+            background-color: #6c757d;
+            border-color: #5a6268;
+        }
+        .accuracy-text {
+            font-size: 12px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        /* 卫星数量和信号强度显示样式 */
+        .satellite-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .satellite-count {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .signal-strength {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .signal-bar {
+            width: 8px;
+            height: 15px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .signal-bar.active {
+            background-color: #ff9800; /* 橙色信号强度 */
+            height: 20px;
+        }
+        
+        .status-poor .satellite-count {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-medium .satellite-count {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #212529;
+        }
+        
+        .status-good .satellite-count {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-excellent .satellite-count {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #212529;
+        }
+        
+        .status-poor .signal-bar.active {
+            background-color: #ff9800; /* 橙色信号强度 */
+        }
+        
+        .status-medium .signal-bar.active {
+            background-color: #ff9800; /* 橙色信号强度 */
+        }
+        
+        .status-good .signal-bar.active {
+            background-color: #ff9800; /* 橙色信号强度 */
+        }
+        
+        .status-excellent .signal-bar.active {
+            background-color: #ff9800; /* 橙色信号强度 */
+        }
+        .coordinate-system {
+            margin: 12px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .coordinate-system label {
+            margin-right: 8px;
+            font-size: 14px;
+        }
+        .coordinate-system select {
+            padding: 4px 6px;
+            font-size: 14px;
+        }
+        .favorites-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .favorites-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        .favorites-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .favorite-item-container {
+            position: relative;
+            display: inline-block;
+            overflow: hidden;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            width: calc(33.33% - 5.33px);
+            min-width: 120px;
+            background-color: white;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .favorite-item-container:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .favorite-item-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 10px 6px;
+            border-radius: 4px;
+        }
+        .favorite-name-btn {
+            flex: 1;
+            padding: 4px 8px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.2s;
+            min-width: 80px;
+            font-weight: 500;
+        }
+        .favorite-name-btn:hover {
+            background-color: #0056b3;
+        }
+        .favorites-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        .favorites-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .favorites-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .favorites-list::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 <body>
     <div class="toast" id="toast">提示</div>
-
-    <h1>经纬度转换</h1>
-
-    <div class="section-title">GPS度分输入（遥控器格式）</div>
-    <div class="input-line">
-        <label>纬度 度</label>
-        <div class="input-group">
-            <input type="number" id="latDeg" placeholder="度" oninput="updatePreview()">
-            <button class="clear-btn" onclick="clearInput('latDeg')">清空</button>
+    <div class="custom-modal-overlay" id="confirmModal">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="confirmTitle">确认操作</h3>
+                <button class="custom-modal-close" id="confirmClose">×</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-modal-content" id="confirmMessage">您确定要执行此操作吗？</div>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn custom-modal-btn-secondary" id="confirmCancel">取消</button>
+                <button class="custom-modal-btn custom-modal-btn-primary" id="confirmOk">确定</button>
+            </div>
         </div>
     </div>
-    <div class="input-line">
-        <label>纬度 分</label>
-        <div class="input-group">
-            <input type="number" step="0.001" id="latMin" placeholder="如 57.029" oninput="updatePreview()">
-            <button class="clear-btn" onclick="clearInput('latMin')">清空</button>
+    <div class="custom-modal-overlay" id="promptModal">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="promptTitle">输入信息</h3>
+                <button class="custom-modal-close" id="promptClose">×</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-modal-content" id="promptMessage">请输入所需信息：</div>
+                <input type="text" class="custom-modal-input" id="promptInput" placeholder="请输入内容...">
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn custom-modal-btn-secondary" id="promptCancel">取消</button>
+                <button class="custom-modal-btn custom-modal-btn-primary" id="promptOk">确定</button>
+            </div>
         </div>
     </div>
-    <div class="input-line">
-        <label>经度 度</label>
-        <div class="input-group">
-            <input type="number" id="lngDeg" placeholder="度" oninput="updatePreview()">
-            <button class="clear-btn" onclick="clearInput('lngDeg')">清空</button>
+    <div class="custom-modal-overlay" id="saveFavoriteModal">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="saveFavoriteTitle">保存收藏位置</h3>
+                <button class="custom-modal-close" id="saveFavoriteClose">×</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-modal-content" id="saveFavoriteMessage">请为这个位置命名：</div>
+                <input type="text" class="custom-modal-input" id="saveFavoriteName" placeholder="例如：家、公司">
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn custom-modal-btn-secondary" id="saveFavoriteCancel">取消</button>
+                <button class="custom-modal-btn custom-modal-btn-primary" id="saveFavoriteOk">确定</button>
+            </div>
         </div>
     </div>
-    <div class="input-line">
-        <label>经度 分</label>
-        <div class="input-group">
-            <input type="number" step="0.001" id="lngMin" placeholder="如 37.024" oninput="updatePreview()">
-            <button class="clear-btn" onclick="clearInput('lngMin')">清空</button>
+    <div class="custom-modal-overlay" id="favoriteActionModal">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="favoriteActionTitle">位置操作</h3>
+                <button class="custom-modal-close" id="favoriteActionClose">×</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-modal-content" id="favoriteActionMessage">请选择要执行的操作：</div>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="custom-modal-btn custom-modal-btn-primary" id="favoriteRenameBtn">重命名</button>
+                    <button class="custom-modal-btn custom-modal-btn-danger" id="favoriteDeleteBtn">删除位置</button>
+                    <button class="custom-modal-btn custom-modal-btn-secondary" id="favoriteBackBtn">返回</button>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div id="preview">实时预览：请输入度、分（小数分）</div>
-    <button onclick="dmsToDec()">度分 → 十进制度(WGS84)</button>
-
-    <div id="result">转换结果将显示在这里</div>
-
-    <div class="copy-row">
-        <button class="copy-btn" onclick="copyLat()">复制纬度</button>
-        <button class="copy-btn" onclick="copyLng()">复制经度</button>
-    </div>
-
-    <hr class="divider">
-
-    <div class="section-title">度分秒输入（DMS格式）</div>
-    <div class="input-line">
-        <label>纬度 度</label>
-        <div class="input-group">
-            <input type="number" id="dmsLatDeg" placeholder="度" oninput="updatePreviewDms()">
-            <button class="clear-btn" onclick="clearInput('dmsLatDeg')">清空</button>
+    <h1>经纬度转换工具</h1>
+    <div class="container">
+        <div class="section-title">GPS度分输入（遥控器格式）</div>
+        <div class="input-container">
+            <div class="input-line">
+                <label>纬度 度</label>
+                <div class="input-group">
+                    <input type="number" id="latDeg" placeholder="度">
+                    <button class="clear-btn" id="clearLatDeg">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>纬度 分</label>
+                <div class="input-group">
+                    <input type="number" id="latMin" placeholder="如 57.029">
+                    <button class="clear-btn" id="clearLatMin">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>经度 度</label>
+                <div class="input-group">
+                    <input type="number" id="lngDeg" placeholder="度">
+                    <button class="clear-btn" id="clearLngDeg">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>经度 分</label>
+                <div class="input-group">
+                    <input type="number" id="lngMin" placeholder="如 37.024">
+                    <button class="clear-btn" id="clearLngMin">清空</button>
+                </div>
+            </div>
+        </div>
+        <div id="preview">实时预览：请输入度、分（小数分）</div>
+        <button id="dmsToDecBtn">度分 → 十进制度(WGS84)</button>
+        <div id="result">转换结果将显示在这里</div>
+        <div class="copy-row">
+            <button class="copy-btn" id="copyLatBtn" disabled>复制纬度</button>
+            <button class="copy-btn" id="copyLngBtn" disabled>复制经度</button>
+        </div>
+        <div class="map-row">
+            <button class="map-btn gps-btn" id="gpsMapBtn" disabled>打开定位软件</button>
         </div>
     </div>
-    <div class="input-line">
-        <label>纬度 分</label>
-        <div class="input-group">
-            <input type="number" id="dmsLatMin" placeholder="分" oninput="updatePreviewDms()">
-            <button class="clear-btn" onclick="clearInput('dmsLatMin')">清空</button>
+    <div class="container">
+        <div class="section-title">WGS84坐标直接打开</div>
+        <div class="input-container">
+            <div class="input-line">
+                <label>纬度</label>
+                <div class="input-group">
+                    <input type="number" id="directLat" placeholder="如 39.950483">
+                    <button class="clear-btn" id="clearDirectLat">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>经度</label>
+                <div class="input-group">
+                    <input type="number" id="directLng" placeholder="如 119.617067">
+                    <button class="clear-btn" id="clearDirectLng">清空</button>
+                </div>
+            </div>
+        </div>
+        <div class="coordinate-system">
+            <label>坐标系：</label>
+            <select id="coordSystem">
+                <option value="wgs84">WGS84（国际标准）</option>
+                <option value="gcj02">GCJ02（中国标准）</option>
+                <option value="bd09">BD09（百度坐标）</option>
+                <option value="auto">自动匹配导航软件</option>
+            </select>
+        </div>
+        <div class="map-row">
+            <button class="map-btn gps-btn" id="directGpsMapBtn" disabled>直接打开定位软件</button>
+        </div>
+        <button class="location-btn" id="getLocationBtn">获取当前地理位置</button>
+        <button class="stop-location-btn" id="stopLocationBtn" disabled>停止持续定位</button>
+        <div class="location-status status-default" id="locationStatus">
+            <div class="location-status-inner">
+                <div class="coordinate-line" id="coordinateText">经纬度：未获取位置</div>
+                <div class="accuracy-text" id="accuracyText">
+                    <span>精度：--</span>
+                    <div class="satellite-info">
+                        <span class="satellite-count" id="satelliteCount"></span>
+                        <div class="signal-strength" id="signalStrength">
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="copy-row">
+            <button class="copy-btn" id="copyCurrentLatBtn" disabled>复制当前纬度</button>
+            <button class="copy-btn" id="copyCurrentLngBtn" disabled>复制当前经度</button>
+            <button class="copy-btn save-favorite-btn" id="saveCurrentLocationBtn" disabled>收藏当前位置</button>
+            <button class="copy-btn save-favorite-btn" id="saveManualLocationBtn" disabled>收藏输入坐标</button>
+        </div>
+        <div class="favorites-section">
+            <div class="favorites-title">收藏位置</div>
+            <div class="favorites-list" id="favoritesList">
+                <div class="history-empty">暂无收藏位置</div>
+            </div>
+        </div>
+        <div class="wgs84-to-degmin-section">
+            <div class="wgs84-to-degmin-title">WGS84转度分格式</div>
+            <div class="input-container">
+                <div class="input-line">
+                    <label>WGS84纬度</label>
+                    <div class="input-group">
+                        <input type="number" id="wgs84Lat" placeholder="如 39.950483">
+                        <button class="clear-btn" id="clearWgs84Lat">清空</button>
+                    </div>
+                </div>
+                <div class="input-line">
+                    <label>WGS84经度</label>
+                    <div class="input-group">
+                        <input type="number" id="wgs84Lng" placeholder="如 119.617067">
+                        <button class="clear-btn" id="clearWgs84Lng">清空</button>
+                    </div>
+                </div>
+            </div>
+            <button id="wgs84ToDegMinBtn" disabled>WGS84 → 度分格式</button>
+            <div id="degMinResult">转换结果将显示在这里</div>
+            <div class="copy-row">
+                <button class="copy-btn" id="copyDegMinLatBtn" disabled>复制纬度度分</button>
+                <button class="copy-btn" id="copyDegMinLngBtn" disabled>复制经度度分</button>
+            </div>
         </div>
     </div>
-    <div class="input-line">
-        <label>纬度 秒</label>
-        <div class="input-group">
-            <input type="number" step="0.001" id="dmsLatSec" placeholder="秒" oninput="updatePreviewDms()">
-            <button class="clear-btn" onclick="clearInput('dmsLatSec')">清空</button>
+    <div class="container">
+        <div class="section-title">度分秒输入（DMS格式）</div>
+        <div class="input-container">
+            <div class="input-line">
+                <label>纬度 度</label>
+                <div class="input-group">
+                    <input type="number" id="dmsLatDeg" placeholder="度">
+                    <button class="clear-btn" id="clearDmsLatDeg">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>纬度 分</label>
+                <div class="input-group">
+                    <input type="number" id="dmsLatMin" placeholder="分">
+                    <button class="clear-btn" id="clearDmsLatMin">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>纬度 秒</label>
+                <div class="input-group">
+                    <input type="number" id="dmsLatSec" placeholder="秒">
+                    <button class="clear-btn" id="clearDmsLatSec">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>经度 度</label>
+                <div class="input-group">
+                    <input type="number" id="dmsLngDeg" placeholder="度">
+                    <button class="clear-btn" id="clearDmsLngDeg">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>经度 分</label>
+                <div class="input-group">
+                    <input type="number" id="dmsLngMin" placeholder="分">
+                    <button class="clear-btn" id="clearDmsLngMin">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>经度 秒</label>
+                <div class="input-group">
+                    <input type="number" id="dmsLngSec" placeholder="秒">
+                    <button class="clear-btn" id="clearDmsLngSec">清空</button>
+                </div>
+            </div>
+        </div>
+        <div id="previewDms">实时预览：请输入度、分、秒</div>
+        <button id="dmsFormatToDecBtn">度分秒 → 十进制度(WGS84)</button>
+        <div id="resultDms">转换结果将显示在这里</div>
+        <div class="copy-row">
+            <button class="copy-btn" id="copyLatDmsBtn" disabled>复制纬度</button>
+            <button class="copy-btn" id="copyLngDmsBtn" disabled>复制经度</button>
+        </div>
+        <div class="map-row">
+            <button class="map-btn gps-btn" id="gpsMapBtnDms" disabled>打开定位软件</button>
         </div>
     </div>
-    <div class="input-line">
-        <label>经度 度</label>
-        <div class="input-group">
-            <input type="number" id="dmsLngDeg" placeholder="度" oninput="updatePreviewDms()">
-            <button class="clear-btn" onclick="clearInput('dmsLngDeg')">清空</button>
+    <div class="container">
+        <div class="section-title">坐标系互相转换</div>
+        <div class="input-container">
+            <div class="input-line">
+                <label>原坐标系</label>
+                <div class="input-group">
+                    <select id="fromCoord">
+                        <option value="wgs84">WGS84 国际标准</option>
+                        <option value="gcj02">GCJ02 火星坐标</option>
+                        <option value="bd09">BD09 百度坐标</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>目标坐标系</label>
+                <div class="input-group">
+                    <select id="toCoord">
+                        <option value="wgs84">WGS84 国际标准</option>
+                        <option value="gcj02">GCJ02 火星坐标</option>
+                        <option value="bd09">BD09 百度坐标</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>输入纬度</label>
+                <div class="input-group">
+                    <input type="number" id="srcLat" placeholder="输入十进制纬度">
+                    <button class="clear-btn" id="clearSrcLat">清空</button>
+                </div>
+            </div>
+            <div class="input-line">
+                <label>输入经度</label>
+                <div class="input-group">
+                    <input type="number" id="srcLng" placeholder="输入十进制经度">
+                    <button class="clear-btn" id="clearSrcLng">清空</button>
+                </div>
+            </div>
+        </div>
+        <div id="coordResult">坐标系转换结果将显示在这里</div>
+        <button id="coordConvertBtn">开始坐标系转换</button>
+        <div class="copy-row">
+            <button class="copy-btn" id="copyDestLatBtn" disabled>复制目标纬度</button>
+            <button class="copy-btn" id="copyDestLngBtn" disabled>复制目标经度</button>
+        </div>
+        <div class="map-row">
+            <button class="map-btn gps-btn" id="gpsMapBtnCoord" disabled>打开定位软件</button>
         </div>
     </div>
-    <div class="input-line">
-        <label>经度 分</label>
-        <div class="input-group">
-            <input type="number" id="dmsLngMin" placeholder="分" oninput="updatePreviewDms()">
-            <button class="clear-btn" onclick="clearInput('dmsLngMin')">清空</button>
+    <div class="container">
+        <div class="section-title">
+            <span>转换历史记录</span>
+            <button class="clear-history-btn" id="clearHistoryBtn">清除历史</button>
+        </div>
+        <div id="historyList">
+            <div class="history-empty">暂无转换记录</div>
         </div>
     </div>
-    <div class="input-line">
-        <label>经度 秒</label>
-        <div class="input-group">
-            <input type="number" step="0.001" id="dmsLngSec" placeholder="秒" oninput="updatePreviewDms()">
-            <button class="clear-btn" onclick="clearInput('dmsLngSec')">清空</button>
-        </div>
-    </div>
-
-    <div id="previewDms">实时预览：请输入度、分、秒</div>
-    <button onclick="dmsFormatToDec()">度分秒 → 十进制度(WGS84)</button>
-
-    <div id="resultDms">转换结果将显示在这里</div>
-
-    <div class="copy-row">
-        <button class="copy-btn" onclick="copyLatDms()">复制纬度</button>
-        <button class="copy-btn" onclick="copyLngDms()">复制经度</button>
-    </div>
-
     <script>
-        let lastLat = '';
-        let lastLng = '';
-        let lastLatDms = '';
-        let lastLngDms = '';
-        const toast = document.getElementById('toast');
-
-        const inputsOrder = [
-            'latDeg','latMin','lngDeg','lngMin',
-            'dmsLatDeg','dmsLatMin','dmsLatSec',
-            'dmsLngDeg','dmsLngMin','dmsLngSec'
-        ];
-
-        document.querySelectorAll('input').forEach((input, idx) => {
-            input.addEventListener('keydown', function(e) {
-                if(e.key === 'Enter') {
-                    e.preventDefault();
-                    let nowIndex = inputsOrder.indexOf(this.id);
-                    if(nowIndex !== -1 && nowIndex < inputsOrder.length - 1){
-                        document.getElementById(inputsOrder[nowIndex+1]).focus();
+        document.addEventListener('DOMContentLoaded', function() {
+            const el = {
+                toast: document.getElementById('toast'),
+                preview: document.getElementById('preview'),
+                result: document.getElementById('result'),
+                previewDms: document.getElementById('previewDms'),
+                resultDms: document.getElementById('resultDms'),
+                coordResult: document.getElementById('coordResult'),
+                historyList: document.getElementById('historyList'),
+                latDeg: document.getElementById('latDeg'),
+                latMin: document.getElementById('latMin'),
+                lngDeg: document.getElementById('lngDeg'),
+                lngMin: document.getElementById('lngMin'),
+                dmsLatDeg: document.getElementById('dmsLatDeg'),
+                dmsLatMin: document.getElementById('dmsLatMin'),
+                dmsLatSec: document.getElementById('dmsLatSec'),
+                dmsLngDeg: document.getElementById('dmsLngDeg'),
+                dmsLngMin: document.getElementById('dmsLngMin'),
+                dmsLngSec: document.getElementById('dmsLngSec'),
+                srcLat: document.getElementById('srcLat'),
+                srcLng: document.getElementById('srcLng'),
+                fromCoord: document.getElementById('fromCoord'),
+                toCoord: document.getElementById('toCoord'),
+                coordSystem: document.getElementById('coordSystem'),
+                directLat: document.getElementById('directLat'),
+                directLng: document.getElementById('directLng'),
+                clearLatDeg: document.getElementById('clearLatDeg'),
+                clearLatMin: document.getElementById('clearLatMin'),
+                clearLngDeg: document.getElementById('clearLngDeg'),
+                clearLngMin: document.getElementById('clearLngMin'),
+                clearDmsLatDeg: document.getElementById('clearDmsLatDeg'),
+                clearDmsLatMin: document.getElementById('clearDmsLatMin'),
+                clearDmsLatSec: document.getElementById('clearDmsLatSec'),
+                clearDmsLngDeg: document.getElementById('clearDmsLngDeg'),
+                clearDmsLngMin: document.getElementById('clearDmsLngMin'),
+                clearDmsLngSec: document.getElementById('clearDmsLngSec'),
+                clearSrcLat: document.getElementById('clearSrcLat'),
+                clearSrcLng: document.getElementById('clearSrcLng'),
+                clearDirectLat: document.getElementById('clearDirectLat'),
+                clearDirectLng: document.getElementById('clearDirectLng'),
+                clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+                dmsToDecBtn: document.getElementById('dmsToDecBtn'),
+                dmsFormatToDecBtn: document.getElementById('dmsFormatToDecBtn'),
+                coordConvertBtn: document.getElementById('coordConvertBtn'),
+                wgs84ToDegMinBtn: document.getElementById('wgs84ToDegMinBtn'),
+                copyLatBtn: document.getElementById('copyLatBtn'),
+                copyLngBtn: document.getElementById('copyLngBtn'),
+                copyLatDmsBtn: document.getElementById('copyLatDmsBtn'),
+                copyLngDmsBtn: document.getElementById('copyLngDmsBtn'),
+                copyDestLatBtn: document.getElementById('copyDestLatBtn'),
+                copyDestLngBtn: document.getElementById('copyDestLngBtn'),
+                copyDegMinLatBtn: document.getElementById('copyDegMinLatBtn'),
+                copyDegMinLngBtn: document.getElementById('copyDegMinLngBtn'),
+                gpsMapBtn: document.getElementById('gpsMapBtn'),
+                gpsMapBtnDms: document.getElementById('gpsMapBtnDms'),
+                gpsMapBtnCoord: document.getElementById('gpsMapBtnCoord'),
+                directGpsMapBtn: document.getElementById('directGpsMapBtn'),
+                getLocationBtn: document.getElementById('getLocationBtn'),
+                stopLocationBtn: document.getElementById('stopLocationBtn'),
+                locationStatus: document.getElementById('locationStatus'),
+                coordinateText: document.getElementById('coordinateText'),
+                accuracyText: document.getElementById('accuracyText'),
+                satelliteCount: document.getElementById('satelliteCount'),
+                signalStrength: document.getElementById('signalStrength'),
+                copyCurrentLatBtn: document.getElementById('copyCurrentLatBtn'),
+                copyCurrentLngBtn: document.getElementById('copyCurrentLngBtn'),
+                saveCurrentLocationBtn: document.getElementById('saveCurrentLocationBtn'),
+                saveManualLocationBtn: document.getElementById('saveManualLocationBtn'),
+                favoritesList: document.getElementById('favoritesList'),
+                confirmModal: document.getElementById('confirmModal'),
+                confirmTitle: document.getElementById('confirmTitle'),
+                confirmMessage: document.getElementById('confirmMessage'),
+                confirmOk: document.getElementById('confirmOk'),
+                confirmCancel: document.getElementById('confirmCancel'),
+                confirmClose: document.getElementById('confirmClose'),
+                promptModal: document.getElementById('promptModal'),
+                promptTitle: document.getElementById('promptTitle'),
+                promptMessage: document.getElementById('promptMessage'),
+                promptInput: document.getElementById('promptInput'),
+                promptOk: document.getElementById('promptOk'),
+                promptCancel: document.getElementById('promptCancel'),
+                promptClose: document.getElementById('promptClose'),
+                saveFavoriteModal: document.getElementById('saveFavoriteModal'),
+                saveFavoriteTitle: document.getElementById('saveFavoriteTitle'),
+                saveFavoriteMessage: document.getElementById('saveFavoriteMessage'),
+                saveFavoriteName: document.getElementById('saveFavoriteName'),
+                saveFavoriteOk: document.getElementById('saveFavoriteOk'),
+                saveFavoriteCancel: document.getElementById('saveFavoriteCancel'),
+                saveFavoriteClose: document.getElementById('saveFavoriteClose'),
+                favoriteActionModal: document.getElementById('favoriteActionModal'),
+                favoriteActionTitle: document.getElementById('favoriteActionTitle'),
+                favoriteActionMessage: document.getElementById('favoriteActionMessage'),
+                favoriteRenameBtn: document.getElementById('favoriteRenameBtn'),
+                favoriteDeleteBtn: document.getElementById('favoriteDeleteBtn'),
+                favoriteBackBtn: document.getElementById('favoriteBackBtn'),
+                favoriteActionClose: document.getElementById('favoriteActionClose'),
+                wgs84Lat: document.getElementById('wgs84Lat'),
+                wgs84Lng: document.getElementById('wgs84Lng'),
+                degMinResult: document.getElementById('degMinResult'),
+                clearWgs84Lat: document.getElementById('clearWgs84Lat'),
+                clearWgs84Lng: document.getElementById('clearWgs84Lng')
+            };
+            let lastLat = '';
+            let lastLng = '';
+            let lastLatDms = '';
+            let lastLngDms = '';
+            let destLat = '';
+            let destLng = '';
+            let currentLat = '';
+            let currentLng = '';
+            let degMinLat = '';
+            let degMinLng = '';
+            let history = [];
+            let favorites = [];
+            const MAX_HISTORY = 20;
+            const MAX_FAVORITES = 10;
+            let locationWatchId = null;
+            let bestPosition = null;
+            let positionUpdates = 0;
+            const inputsOrder = [
+                'latDeg','latMin','lngDeg','lngMin',
+                'directLat','directLng',
+                'dmsLatDeg','dmsLatMin','dmsLatSec',
+                'dmsLngDeg','dmsLngMin','dmsLngSec',
+                'srcLat','srcLng',
+                'wgs84Lat','wgs84Lng'
+            ];
+            let currentFavoriteId = null;
+            
+            function debounce(func, delay) {
+                let timeoutId;
+                return function(...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => func.apply(this, args), delay);
+                };
+            }
+            
+            function showToast(msg) {
+                el.toast.innerText = msg;
+                el.toast.style.display = 'block';
+                setTimeout(() => el.toast.style.display = 'none', 1200);
+            }
+            
+            function isNumericInput(input) {
+                return input.type === 'number' || 
+                       input.inputmode === 'numeric' || 
+                       (input.pattern && input.pattern.includes('[-+]?\\d*\\.?\\d*'));
+            }
+            
+            document.querySelectorAll('input').forEach((input, idx) => {
+                if (isNumericInput(input)) {
+                    input.setAttribute('inputmode', 'numeric');
+                    input.addEventListener('keypress', function(e) {
+                        const allowedChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', '+', 'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'];
+                        if (!allowedChars.includes(e.key) && !e.ctrlKey && !e.metaKey) {
+                            e.preventDefault();
+                        }
+                    });
+                }
+                input.addEventListener('input', function(e) {
+                    if (isNumericInput(this)) {
+                        const start = this.selectionStart;
+                        const end = this.selectionEnd;
+                        let value = this.value.replace(/[^-+0-9.]/g, '');
+                        const decimalPoints = value.split('.');
+                        if (decimalPoints.length > 2) {
+                            value = decimalPoints[0] + '.' + decimalPoints.slice(1).join('');
+                        }
+                        const negatives = value.split('-');
+                        if (negatives.length > 2) {
+                            value = '-' + negatives.slice(1).join('');
+                        }
+                        if (value.startsWith('-') && value.length > 1 && value[1] === '-') {
+                            value = '-' + value.slice(2);
+                        }
+                        const positives = value.split('+');
+                        if (positives.length > 2) {
+                            value = '+' + positives.slice(1).join('');
+                        }
+                        if (value.startsWith('+') && value.length > 1 && value[1] === '+') {
+                            value = '+' + value.slice(2);
+                        }
+                        if (value.includes('+') && value.includes('-')) {
+                            value = value.replace(/[+-]/, '');
+                        }
+                        if (value.startsWith('+') && value.includes('-')) {
+                            value = value.replace('+', '');
+                        }
+                        if (value.startsWith('.')) {
+                            value = '0' + value;
+                        }
+                        if (this.value !== value) {
+                            this.value = value;
+                            const newStart = Math.min(start, value.length);
+                            const newEnd = Math.min(end, value.length);
+                            this.setSelectionRange(newStart, newEnd);
+                        }
                     }
+                });
+                input.addEventListener('click', function(e) {
+                    this.focus();
+                    if (isNumericInput(this)) {
+                        this.setAttribute('inputmode', 'numeric');
+                    } else {
+                        this.removeAttribute('inputmode');
+                    }
+                    if (this.value.length === 0) {
+                        this.value = '';
+                    }
+                    this.dispatchEvent(new Event('input'));
+                });
+                input.addEventListener('focus', function() {
+                    if (isNumericInput(this)) {
+                        this.setAttribute('inputmode', 'numeric');
+                    }
+                    setTimeout(() => {
+                        this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                });
+                input.addEventListener('keydown', function(e) {
+                    if(e.key === 'Enter') {
+                        e.preventDefault();
+                        let nowIndex = inputsOrder.indexOf(this.id);
+                        if(nowIndex !== -1 && nowIndex < inputsOrder.length - 1){
+                            const nextInput = document.getElementById(inputsOrder[nowIndex+1]);
+                            nextInput.focus();
+                            if (isNumericInput(nextInput)) {
+                                nextInput.setAttribute('inputmode', 'numeric');
+                            }
+                        } else if(nowIndex === inputsOrder.length - 1) {
+                            openDirectLocation();
+                        }
+                    }
+                });
+            });
+            
+            const debouncedUpdatePreview = debounce(updatePreview, 300);
+            const debouncedUpdatePreviewDms = debounce(updatePreviewDms, 300);
+            const debouncedUpdateDirectButtons = debounce(updateDirectButtons, 300);
+            const debouncedUpdateDegMinButtons = debounce(updateDegMinButtons, 300);
+            
+            el.latDeg.addEventListener('input', debouncedUpdatePreview);
+            el.latMin.addEventListener('input', debouncedUpdatePreview);
+            el.lngDeg.addEventListener('input', debouncedUpdatePreview);
+            el.lngMin.addEventListener('input', debouncedUpdatePreview);
+            el.dmsLatDeg.addEventListener('input', debouncedUpdatePreviewDms);
+            el.dmsLatMin.addEventListener('input', debouncedUpdatePreviewDms);
+            el.dmsLatSec.addEventListener('input', debouncedUpdatePreviewDms);
+            el.dmsLngDeg.addEventListener('input', debouncedUpdatePreviewDms);
+            el.dmsLngMin.addEventListener('input', debouncedUpdatePreviewDms);
+            el.dmsLngSec.addEventListener('input', debouncedUpdatePreviewDms);
+            el.directLat.addEventListener('input', debouncedUpdateDirectButtons);
+            el.directLng.addEventListener('input', debouncedUpdateDirectButtons);
+            el.wgs84Lat.addEventListener('input', debouncedUpdateDegMinButtons);
+            el.wgs84Lng.addEventListener('input', debouncedUpdateDegMinButtons);
+            
+            el.clearLatDeg.addEventListener('click', () => clearInput('latDeg'));
+            el.clearLatMin.addEventListener('click', () => clearInput('latMin'));
+            el.clearLngDeg.addEventListener('click', () => clearInput('lngDeg'));
+            el.clearLngMin.addEventListener('click', () => clearInput('lngMin'));
+            el.clearDmsLatDeg.addEventListener('click', () => clearInput('dmsLatDeg'));
+            el.clearDmsLatMin.addEventListener('click', () => clearInput('dmsLatMin'));
+            el.clearDmsLatSec.addEventListener('click', () => clearInput('dmsLatSec'));
+            el.clearDmsLngDeg.addEventListener('click', () => clearInput('dmsLngDeg'));
+            el.clearDmsLngMin.addEventListener('click', () => clearInput('dmsLngMin'));
+            el.clearDmsLngSec.addEventListener('click', () => clearInput('dmsLngSec'));
+            el.clearSrcLat.addEventListener('click', () => clearInput('srcLat'));
+            el.clearSrcLng.addEventListener('click', () => clearInput('srcLng'));
+            el.clearDirectLat.addEventListener('click', () => {
+                el.directLat.value = '';
+                updateDirectButtons();
+            });
+            el.clearDirectLng.addEventListener('click', () => {
+                el.directLng.value = '';
+                updateDirectButtons();
+            });
+            el.clearWgs84Lat.addEventListener('click', () => {
+                el.wgs84Lat.value = '';
+                updateDegMinButtons();
+            });
+            el.clearWgs84Lng.addEventListener('click', () => {
+                el.wgs84Lng.value = '';
+                updateDegMinButtons();
+            });
+            
+            el.clearHistoryBtn.addEventListener('click', clearHistory);
+            el.dmsToDecBtn.addEventListener('click', dmsToDec);
+            el.dmsFormatToDecBtn.addEventListener('click', dmsFormatToDec);
+            el.coordConvertBtn.addEventListener('click', coordConvert);
+            el.wgs84ToDegMinBtn.addEventListener('click', wgs84ToDegMin);
+            
+            el.copyLatBtn.addEventListener('click', () => copyValue(lastLat));
+            el.copyLngBtn.addEventListener('click', () => copyValue(lastLng));
+            el.copyLatDmsBtn.addEventListener('click', () => copyValue(lastLatDms));
+            el.copyLngDmsBtn.addEventListener('click', () => copyValue(lastLngDms));
+            el.copyDestLatBtn.addEventListener('click', () => copyValue(destLat));
+            el.copyDestLngBtn.addEventListener('click', () => copyValue(destLng));
+            el.copyDegMinLatBtn.addEventListener('click', () => copyValue(degMinLat));
+            el.copyDegMinLngBtn.addEventListener('click', () => copyValue(degMinLng));
+            
+            el.gpsMapBtn.addEventListener('click', () => openLocationWithSystemPicker(lastLat, lastLng));
+            el.gpsMapBtnDms.addEventListener('click', () => openLocationWithSystemPicker(lastLatDms, lastLngDms));
+            el.gpsMapBtnCoord.addEventListener('click', () => openLocationWithSystemPicker(destLat, destLng));
+            el.directGpsMapBtn.addEventListener('click', openDirectLocation);
+            
+            el.getLocationBtn.addEventListener('click', getCurrentLocation);
+            el.stopLocationBtn.addEventListener('click', stopLocationTracking);
+            
+            el.copyCurrentLatBtn.addEventListener('click', () => copyValue(currentLat));
+            el.copyCurrentLngBtn.addEventListener('click', () => copyValue(currentLng));
+            el.saveCurrentLocationBtn.addEventListener('click', showSaveFavoriteModal);
+            el.saveManualLocationBtn.addEventListener('click', showSaveManualFavoriteModal);
+            
+            let confirmCallback = null;
+            let promptCallback = null;
+            let saveFavoriteCallback = null;
+            
+            function setupModalHandlers(modal, okBtn, cancelBtn, closeBtn, callback) {
+                okBtn.addEventListener('click', () => handleModalResult(true));
+                cancelBtn.addEventListener('click', () => handleModalResult(false));
+                closeBtn.addEventListener('click', () => handleModalResult(false));
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) handleModalResult(false);
+                });
+                
+                function handleModalResult(confirmed) {
+                    modal.style.display = 'none';
+                    callback?.(confirmed);
+                }
+            }
+            
+            setupModalHandlers(el.confirmModal, el.confirmOk, el.confirmCancel, el.confirmClose, (confirmed) => {
+                if (confirmCallback) confirmCallback(confirmed);
+                confirmCallback = null;
+            });
+            
+            setupModalHandlers(el.promptModal, el.promptOk, el.promptCancel, el.promptClose, (confirmed) => {
+                if (confirmed) {
+                    const value = el.promptInput.value.trim();
+                    if (promptCallback) promptCallback(value);
+                } else {
+                    if (promptCallback) promptCallback(null);
+                }
+                promptCallback = null;
+            });
+            
+            setupModalHandlers(el.saveFavoriteModal, el.saveFavoriteOk, el.saveFavoriteCancel, el.saveFavoriteClose, (confirmed) => {
+                if (confirmed) {
+                    const name = el.saveFavoriteName.value.trim();
+                    if (saveFavoriteCallback) saveFavoriteCallback(name);
+                } else {
+                    if (saveFavoriteCallback) saveFavoriteCallback(null);
+                }
+                saveFavoriteCallback = null;
+            });
+            
+            setupModalHandlers(el.favoriteActionModal, null, el.favoriteBackBtn, el.favoriteActionClose, (confirmed) => {
+                if (!confirmed) {
+                    currentFavoriteId = null;
                 }
             });
-
-            input.addEventListener('focus', function() {
-                setTimeout(() => {
-                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 100);
-            });
+            
+            el.favoriteRenameBtn.addEventListener('click', function() {
+                el.favoriteActionModal.style.display = 'none';
+                const favorite = favorites.find(f => f.id === currentFavoriteId);
+                if (favorite) {
+                    showPrompt(
+                        '重命名收藏位置',
+                        '请输入新的收藏位置名称：',
+                        favorite.name,
+                        function(newName) {
+                            if (newName && newName.trim() !== '') {
+                                const existingIndex = favorites.findIndex(f => f.name === newName.trim() && f.id !== currentFavoriteId);
+                                if (existingIndex !== -1) {
+                                    showToast('已存在同名收藏位置');
+                                    return;
+                                }
+                                
+                                const index = favorites.findIndex(f => f.id === currentFavoriteId);
+                if (index !== -1) {
+                    favorites[index].name = newName.trim();
+                    saveFavorites();
+                    renderFavorites();
+                    showToast('收藏位置已重命名');
+                }
+            }
         });
+    }
+});
 
-        function clearInput(id) {
-            document.getElementById(id).value = '';
-            updatePreview();
-            updatePreviewDms();
+el.favoriteDeleteBtn.addEventListener('click', function() {
+    el.favoriteActionModal.style.display = 'none';
+    const favorite = favorites.find(f => f.id === currentFavoriteId);
+    if (favorite) {
+        showConfirm(
+            '删除收藏',
+            `确定要删除收藏位置 "${favorite.name}" 吗？`,
+            function(confirmed) {
+                if (confirmed) {
+                    const index = favorites.findIndex(f => f.id === currentFavoriteId);
+                    if (index !== -1) {
+                        favorites.splice(index, 1);
+                        saveFavorites();
+                        renderFavorites();
+                        showToast('收藏位置已删除');
+                    }
+                }
+            }
+        );
+    }
+});
+
+el.historyList.addEventListener('click', function(e) {
+    const target = e.target;
+    if (target.classList.contains('history-gps')) {
+        handleHistoryGpsClick.call(target);
+    };
+    if (target.classList.contains('star-btn')) {
+        handleStarClick.call(target);
+    };
+    if (target.classList.contains('rename-btn')) {
+        handleRenameClick.call(target);
+    };
+    if (target.classList.contains('delete-btn')) {
+        handleDeleteClick.call(target);
+    };
+    if (target.classList.contains('history-copy-lat')) {
+        handleHistoryCopyLatClick.call(target);
+    };
+    if (target.classList.contains('history-copy-lng')) {
+        handleHistoryCopyLngClick.call(target);
+    };
+});
+
+el.favoritesList.addEventListener('click', function(e) {
+    const target = e.target;
+    const container = target.closest('.favorite-item-container');
+    if (container) {
+        const id = parseFloat(container.dataset.id);
+        handleFavoriteClick(id);
+    }
+});
+
+el.favoritesList.addEventListener('mousedown', function(e) {
+    const container = e.target.closest('.favorite-item-container');
+    if (container) {
+        const id = parseFloat(container.dataset.id);
+        setTimeout(() => {
+            currentFavoriteId = id;
+            showFavoriteActionModal();
+        }, 500);
+    }
+});
+
+el.favoritesList.addEventListener('mouseup', function() {
+    currentFavoriteId = null;
+});
+
+el.favoritesList.addEventListener('mouseleave', function() {
+    currentFavoriteId = null;
+});
+
+el.favoritesList.addEventListener('touchstart', function(e) {
+    const container = e.target.closest('.favorite-item-container');
+    if (container) {
+        const id = parseFloat(container.dataset.id);
+        setTimeout(() => {
+            currentFavoriteId = id;
+            showFavoriteActionModal();
+        }, 500);
+    }
+}, { passive: true });
+
+el.favoritesList.addEventListener('touchend', function() {
+    currentFavoriteId = null;
+});
+
+el.favoritesList.addEventListener('touchcancel', function() {
+    currentFavoriteId = null;
+});
+
+loadHistory();
+loadFavorites();
+loadLastLocation();
+updateDegMinButtons();
+
+function showConfirm(title, message, callback) {
+    el.confirmTitle.textContent = title;
+    el.confirmMessage.textContent = message;
+    el.confirmModal.style.display = 'flex';
+    confirmCallback = callback;
+    setTimeout(() => {
+        el.confirmOk.focus();
+    }, 100);
+}
+
+function showPrompt(title, message, defaultValue = '', callback) {
+    el.promptTitle.textContent = title;
+    el.promptMessage.textContent = message;
+    el.promptInput.value = defaultValue;
+    el.promptModal.style.display = 'flex';
+    promptCallback = callback;
+    setTimeout(() => {
+        el.promptInput.focus();
+        if (defaultValue) {
+            el.promptInput.select();
         }
+    }, 100);
+}
 
-        function showToast(msg) {
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 1200);
+function showSaveFavoriteModal() {
+    el.saveFavoriteName.value = '';
+    el.saveFavoriteModal.style.display = 'flex';
+    saveFavoriteCallback = function(name) {
+        if (name && name.trim() !== '') {
+            saveCurrentLocationToFavorites(name);
+        } else {
+            showToast('请输入收藏位置名称');
         }
+    };
+    setTimeout(() => {
+        el.saveFavoriteName.focus();
+    }, 100);
+}
 
-        function dmsToDecimal(d, m) {
-            d = parseFloat(d || 0);
-            m = parseFloat(m || 0);
-            return d + m / 60;
+function showSaveManualFavoriteModal() {
+    el.saveFavoriteName.value = '';
+    el.saveFavoriteModal.style.display = 'flex';
+    saveFavoriteCallback = function(name) {
+        if (name && name.trim() !== '') {
+            saveManualLocationToFavorites(name);
+        } else {
+            showToast('请输入收藏位置名称');
         }
+    };
+    setTimeout(() => {
+        el.saveFavoriteName.focus();
+    }, 100);
+}
 
-        function dmsFormatToDecimal(d, m, s) {
-            d = parseFloat(d || 0);
-            m = parseFloat(m || 0);
-            s = parseFloat(s || 0);
-            return d + m / 60 + s / 3600;
+function showFavoriteActionModal() {
+    const favorite = favorites.find(f => f.id === currentFavoriteId);
+    if (favorite) {
+        el.favoriteActionTitle.textContent = favorite.name;
+        el.favoriteActionMessage.textContent = `请选择对"${favorite.name}"的操作：`;
+    }
+    el.favoriteActionModal.style.display = 'flex';
+}
+
+function openLocationWithSystemPicker(lat, lng) {
+    if(!lat || !lng) {
+        showToast('暂无坐标数据');
+        return;
+    }
+    showToast('正在打开应用选择器...');
+    const geoUrl = `geo:${lat},${lng}?q=${lat},${lng}(定位位置)`;
+    const a = document.createElement('a');
+    a.href = geoUrl;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => {
+        const intentUrl = `intent://maps.google.com/maps?q=${lat},${lng}&z=17&intent=APPEND#Intent;scheme=https;package=com.google.android.apps.maps;end`;
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = intentUrl;
+        document.body.appendChild(iframe);
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+        }, 1000);
+    }, 500);
+}
+
+function openDirectLocation() {
+    const lat = el.directLat.value.trim();
+    const lng = el.directLng.value.trim();
+    if(!lat || !lng) {
+        showToast('请输入完整的经纬度坐标');
+        return;
+    }
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    
+
+if(isNaN(latNum) || isNaN(lngNum) ||
+latNum < -90 || latNum > 90 ||
+       lngNum < -180 || lngNum > 180) {
+        showToast('请输入有效的经纬度坐标');
+        return;
+    }
+    const targetCoordSystem = el.coordSystem.value;
+    let targetLat, targetLng;
+    if (targetCoordSystem === 'gcj02') {
+        const gcjCoords = wgs2gcj(latNum, lngNum);
+        targetLat = gcjCoords.lat.toFixed(8);
+        targetLng = gcjCoords.lng.toFixed(8);
+    } else if (targetCoordSystem === 'bd09') {
+        const bdCoords = wgs2bd(latNum, lngNum);
+        targetLat = bdCoords.lat.toFixed(8);
+        targetLng = bdCoords.lng.toFixed(8);
+    } else {
+        targetLat = lat;
+        targetLng = lng;
+        if (targetCoordSystem === 'auto') {
+            showToast('正在进行地图匹配优化...');
         }
+    }
+    openLocationWithSystemPicker(targetLat, targetLng);
+    addToHistory('WGS84直接打开', 
+        `${lat}, ${lng}`, 
+        `${targetLat}, ${targetLng}`);
+}
 
-        function updatePreview() {
-            const latD = document.getElementById('latDeg').value;
-            const latM = document.getElementById('latMin').value;
-            const lngD = document.getElementById('lngDeg').value;
-            const lngM = document.getElementById('lngMin').value;
+function updateDirectButtons() {
+    const lat = el.directLat.value.trim();
+    const lng = el.directLng.value.trim();
+    el.directGpsMapBtn.disabled = !lat || !lng;
+    el.saveManualLocationBtn.disabled = !lat || !lng;
+}
 
-            const lat = dmsToDecimal(latD, latM);
-            const lng = dmsToDecimal(lngD, lngM);
+function updateLocationButtons() {
+    el.copyCurrentLatBtn.disabled = !currentLat;
+    el.copyCurrentLngBtn.disabled = !currentLng;
+    el.saveCurrentLocationBtn.disabled = !currentLat || !currentLng;
+}
 
-            if (!isNaN(lat) && !isNaN(lng)) {
-                document.getElementById('preview').textContent =
-                    `纬度计算：${latD || 0} + ${latM || 0}/60 = ${lat.toFixed(6)}\n` +
-                    `经度计算：${lngD || 0} + ${lngM || 0}/60 = ${lng.toFixed(6)}`;
-            } else {
-                document.getElementById('preview').textContent = '实时预览：请输入度、分（小数分）';
+function updateDegMinButtons() {
+    const lat = el.wgs84Lat.value.trim();
+    const lng = el.wgs84Lng.value.trim();
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    const isValid = !isNaN(latNum) && !isNaN(lngNum) &&
+                   latNum >= -90 && latNum <= 90 &&
+                   lngNum >= -180 && lngNum <= 180;
+    el.wgs84ToDegMinBtn.disabled = !(lat && lng && isValid);
+    el.copyDegMinLatBtn.disabled = !degMinLat;
+    el.copyDegMinLngBtn.disabled = !degMinLng;
+}
+
+function clearInput(id) {
+    document.getElementById(id).value = '';
+    updatePreview();
+    updatePreviewDms();
+    if(['latDeg','latMin','lngDeg','lngMin'].includes(id)) {
+        if(!el.latDeg.value && !el.latMin.value && !el.lngDeg.value && !el.lngMin.value) {
+            lastLat = '';
+            lastLng = '';
+            el.result.textContent = '转换结果将显示在这里';
+            updateCopyButtons();
+            updateMapButtons();
+        }
+    } else if(['dmsLatDeg','dmsLatMin','dmsLatSec','dmsLngDeg','dmsLngMin','dmsLngSec'].includes(id)) {
+        if(!el.dmsLatDeg.value && !el.dmsLatMin.value && !el.dmsLatSec.value && 
+           !el.dmsLngDeg.value && !el.dmsLngMin.value && !el.dmsLngSec.value) {
+            lastLatDms = '';
+            lastLngDms = '';
+            el.resultDms.textContent = '转换结果将显示在这里';
+            updateCopyButtons();
+            updateMapButtons();
+        }
+    } else if(['srcLat','srcLng'].includes(id)) {
+        if(!el.srcLat.value && !el.srcLng.value) {
+            destLat = '';
+            destLng = '';
+            el.coordResult.textContent = '坐标系转换结果将显示在这里';
+            updateCopyButtons();
+            updateMapButtons();
+        }
+    }
+}
+
+function dmsToDecimal(d, m) {
+    d = Number(d || 0);
+    m = Number(m || 0);
+    return d + m / 60;
+}
+
+function dmsFormatToDecimal(d, m, s) {
+    d = Number(d || 0);
+    m = Number(m || 0);
+    s = Number(s || 0);
+    return d + m / 60 + s / 3600;
+}
+
+function validateMinSec(m, s=0) {
+    m = Number(m || 0);
+    s = Number(s || 0);
+    return m >= 0 && m < 60 && s >= 0 && s < 60;
+}
+
+function updatePreview() {
+    const latD = el.latDeg.value;
+    const latM = el.latMin.value;
+    const lngD = el.lngDeg.value;
+    const lngM = el.lngMin.value;
+    if(!latD && !latM && !lngD && !lngM) {
+        el.preview.textContent = '实时预览：请输入度、分（小数分）';
+        return;
+    }
+    if(!validateMinSec(latM) || !validateMinSec(lngM)) {
+        el.preview.textContent = '实时预览：分的取值范围是0-59.999';
+        return;
+    }
+    const lat = dmsToDecimal(latD, latM);
+    const lng = dmsToDecimal(lngD, lngM);
+    if(lat === 0 && lng === 0) {
+        el.preview.textContent = '实时预览：请输入有效的度、分（小数分）';
+        return;
+    }
+    if (!isNaN(lat) && !isNaN(lng)) {
+
+
+el.preview.textContent = `纬度计算：${latD||0} + ${latM||0}/60 = ${lat.toFixed(8)}
+经度计算：${lngD||0} + ${lngM||0}/60 = ${lng.toFixed(8)}`;
+    } else {
+        el.preview.textContent = '实时预览：请输入有效的数字';
+    }
+}
+
+function updatePreviewDms() {
+    const latD = el.dmsLatDeg.value;
+    const latM = el.dmsLatMin.value;
+    const latS = el.dmsLatSec.value;
+    const lngD = el.dmsLngDeg.value;
+    const lngM = el.dmsLngMin.value;
+    const lngS = el.dmsLngSec.value;
+    if(!latD && !latM && !latS && !lngD && !lngM && !lngS) {
+        el.previewDms.textContent = '实时预览：请输入度、分、秒';
+        return;
+    }
+    if(!validateMinSec(latM, latS) || !validateMinSec(lngM, lngS)) {
+        el.previewDms.textContent = '实时预览：分和秒的取值范围是0-59.999';
+        return;
+    }
+    const lat = dmsFormatToDecimal(latD, latM, latS);
+    const lng = dmsFormatToDecimal(lngD, lngM, lngS);
+    if(lat === 0 && lng === 0) {
+        el.previewDms.textContent = '实时预览：请输入有效的度、分、秒';
+        return;
+    }
+    if (!isNaN(lat) && !isNaN(lng)) {
+
+
+el.previewDms.textContent = `纬度计算：${latD||0} + ${latM||0}/60 + ${latS||0}/3600 = ${lat.toFixed(8)}
+经度计算：${lngD||0} + ${lngM||0}/60 + ${lngS||0}/3600 = ${lng.toFixed(8)}`;
+    } else {
+        el.previewDms.textContent = '实时预览：请输入有效的数字';
+    }
+}
+
+function dmsToDec() {
+    if(!validateMinSec(el.latMin.value) || !validateMinSec(el.lngMin.value)) {
+        el.result.textContent = '分的取值范围是0-59.999';
+        lastLat = '';
+        lastLng = '';
+        updateCopyButtons();
+        updateMapButtons();
+        return;
+    }
+    const lat = dmsToDecimal(el.latDeg.value, el.latMin.value);
+    const lng = dmsToDecimal(el.lngDeg.value, el.lngMin.value);
+    
+
+
+if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+        el.result.textContent = '请输入有效的度和分';
+        lastLat = '';
+        lastLng = '';
+        updateCopyButtons();
+        updateMapButtons();
+        return;
+    }
+    lastLat = lat.toFixed(8);
+    lastLng = lng.toFixed(8);
+    el.result.textContent = `十进制度（WGS84）：
+纬度: ${lastLat}
+经度: ${lastLng}`;
+    updateCopyButtons();
+    updateMapButtons();
+    addToHistory('度分 → WGS84', 
+        `${el.latDeg.value}°${el.latMin.value}'`, 
+        `${lastLat}, ${lastLng}`);
+}
+
+function dmsFormatToDec() {
+    if(!validateMinSec(el.dmsLatMin.value, el.dmsLatSec.value) || 
+       !validateMinSec(el.dmsLngMin.value, el.dmsLngSec.value)) {
+        el.resultDms.textContent = '分和秒的取值范围是0-59.999';
+        lastLatDms = '';
+        lastLngDms = '';
+        updateCopyButtons();
+        updateMapButtons();
+        return;
+    }
+    const lat = dmsFormatToDecimal(
+        el.dmsLatDeg.value,
+        el.dmsLatMin.value,
+        el.dmsLatSec.value
+    );
+    const lng = dmsFormatToDecimal(
+        el.dmsLngDeg.value,
+        el.dmsLngMin.value,
+        el.dmsLngSec.value
+    );
+    
+
+
+if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+        el.resultDms.textContent = '请输入有效的度、分、秒';
+        lastLatDms = '';
+        lastLngDms = '';
+        updateCopyButtons();
+        updateMapButtons();
+        return;
+    }
+    lastLatDms = lat.toFixed(8);
+    lastLngDms = lng.toFixed(8);
+    el.resultDms.textContent = `十进制度（WGS84）：
+纬度: ${lastLatDms}
+经度: ${lastLngDms}`;
+    updateCopyButtons();
+    updateMapButtons();
+    addToHistory('度分秒 → WGS84', 
+        `${el.dmsLatDeg.value}°${el.dmsLatMin.value}'${el.dmsLatSec.value}"`, 
+        `${lastLatDms}, ${lastLngDms}`);
+}
+
+function wgs84ToDegMin() {
+    const lat = el.wgs84Lat.value.trim();
+    const lng = el.wgs84Lng.value.trim();
+    if(!lat || !lng) {
+        showToast('请输入完整的经纬度坐标');
+        return;
+    }
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+    
+
+
+if(isNaN(latNum) || isNaN(lngNum) ||
+latNum < -90 || latNum > 90 ||
+       lngNum < -180 || lngNum > 180) {
+        showToast('请输入有效的经纬度坐标');
+        return;
+    }
+    const latAbs = Math.abs(latNum);
+    const latDeg = Math.floor(latAbs);
+    const latMin = (latAbs - latDeg) * 60;
+    const latMinRounded = latMin.toFixed(4);
+    const latDirection = latNum >= 0 ? 'N' : 'S';
+    const latDegMin = `${latDeg}°${latMinRounded}'${latDirection}`;
+    
+    const lngAbs = Math.abs(lngNum);
+    const lngDeg = Math.floor(lngAbs);
+    const lngMin = (lngAbs - lngDeg) * 60;
+    const lngMinRounded = lngMin.toFixed(4);
+    const lngDirection = lngNum >= 0 ? 'E' : 'W';
+    const lngDegMin = `${lngDeg}°${lngMinRounded}'${lngDirection}`;
+    
+    degMinLat = `${latDeg}°${latMinRounded}'`;
+    degMinLng = `${lngDeg}°${lngMinRounded}'`;
+    el.degMinResult.textContent = `度分格式：
+纬度: ${latDegMin}
+经度: ${lngDegMin}`;
+    updateDegMinButtons();
+    addToHistory('WGS84 → 度分', 
+        `${lat}, ${lng}`, 
+        `${latDegMin}, ${lngDegMin}`);
+}
+
+function copyValue(value) {
+    if(!value) {
+        showToast('暂无数据可复制');
+        return;
+    }
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(value)
+        .then(() => showToast('已复制到剪贴板'))
+        .catch(() => {
+            fallbackCopy(value);
+        });
+    } else {
+        fallbackCopy(value);
+    }
+}
+
+function fallbackCopy(value) {
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = value;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('已复制到剪贴板');
+    } catch (e) {
+        console.error('无法复制到剪贴板:', e);
+        showToast('复制失败，请手动复制');
+    }
+}
+
+function updateCopyButtons() {
+    el.copyLatBtn.disabled = !lastLat;
+    el.copyLngBtn.disabled = !lastLng;
+    el.copyLatDmsBtn.disabled = !lastLatDms;
+    el.copyLngDmsBtn.disabled = !lastLngDms;
+    el.copyDestLatBtn.disabled = !destLat;
+    el.copyDestLngBtn.disabled = !destLng;
+}
+
+function updateMapButtons() {
+    el.gpsMapBtn.disabled = !lastLat || !lastLng;
+    el.gpsMapBtnDms.disabled = !lastLatDms || !lastLngDms;
+    el.gpsMapBtnCoord.disabled = !destLat || !destLng;
+}
+
+function validateLatLng(lat, lng) {
+    if(isNaN(lat) || isNaN(lng)) return false;
+    if(lat < -90 || lat > 90) return false;
+    if(lng < -180 || lng >= 180) return false;
+    if(lat === 0 && lng === 0) return false;
+    return true;
+}
+
+const PI = Math.PI;
+const x_pi = PI * 3000.0 / 180.0;
+
+function outOfChina(lat, lng) {
+    if (lng < 72.004 || lng > 137.8347) return true;
+    if (lat < 0.8293 || lat > 55.8271) return true;
+    return false;
+}
+
+function transformLat(x, y) {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(y * PI) + 40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (160.0 * Math.sin(y / 12.0 * PI) + 320.0 * Math.sin(y * PI / 12.0)) * 2.0 / 3.0;
+    return ret;
+}
+
+function transformLng(x, y) {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(x * PI) + 40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (150.0 * Math.sin(x / 12.0 * PI) + 300.0 * Math.sin(x * PI / 12.0)) * 2.0 / 3.0;
+    return ret;
+}
+
+function wgs2gcj(wgsLat, wgsLng) {
+    if (outOfChina(wgsLat, wgsLng)) {
+        return { lat: wgsLat, lng: wgsLng };
+    }
+    let dLat = transformLat(wgsLng - 105.0, wgsLat - 35.0);
+    let dLng = transformLng(wgsLng - 105.0, wgsLat - 35.0);
+    return { lat: wgsLat + dLat / 180000, lng: wgsLng + dLng / 180000 };
+}
+
+function gcj2wgs(gcjLat, gcjLng) {
+    if (outOfChina(gcjLat, gcjLng)) {
+        return { lat: gcjLat, lng: gcjLng };
+    }
+    let wgsLat = gcjLat;
+    let wgsLng = gcjLng;
+    for (let i = 0; i < 15; i++) {
+        let g = wgs2gcj(wgsLat, wgsLng);
+        wgsLat -= g.lat - gcjLat;
+        wgsLng -= g.lng - gcjLng;
+    }
+    return { lat: wgsLat, lng: wgsLng };
+}
+
+function gcj2bd(gcjLat, gcjLng) {
+    const x = gcjLng;
+    const y = gcjLat;
+    const z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
+    const theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
+    const bd_lng = z * Math.Cos(theta) + 0.0065;
+    const bd_lat = z * Math.Sin(theta) + 0.006;
+    return { lat: bd_lat, lng: bd_lng };
+}
+
+function bd2gcj(bd_lat, bd_lon) {
+    const x = bd_lon - 0.0065;
+    const y = bd_lat - 0.006;
+    const z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
+    const theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
+    const gcj_lon = z * Math.cos(theta);
+    const gcj_lat = z * Math.sin(theta);
+    return { lat: gcj_lat, lng: gcj_lon };
+}
+
+function wgs2bd(wgs_lat, wgs_lon) {
+    const gcj = wgs2gcj(wgs_lat, wgs_lon);
+    return gcj2bd(gcj.lat, gcj.lng);
+}
+
+function bd2wgs(bd_lat, bd_lon) {
+    const gcj = bd2gcj(bd_lat, bd_lon);
+    return gcj2wgs(gcj.lat, gcj.lng);
+}
+
+function coordConvert(){
+    try {
+        let from = el.fromCoord.value;
+        let to = el.toCoord.value;
+        if(from === to) {
+            el.coordResult.textContent = "原坐标系和目标坐标系相同,无需转换";
+            destLat = '';
+            destLng = '';
+            updateCopyButtons();
+            return;
+        }
+        let lat = Number(el.srcLat.value);
+        let lng = Number(el.srcLng.value);
+        if(!validateLatLng(lat, lng)){
+            el.coordResult.textContent = "请输入有效的经纬度（纬度±90,经度±180）";
+            destLat = '';
+            destLng = '';
+            updateCopyButtons();
+            updateMapButtons();
+            return;
+        }
+        let res;
+        if(from==="wgs84"&&to==="gcj02"){
+            res = wgs2gcj(lat, lng);
+        }else if(from==="wgs84"&&to==="bd09"){
+            res = wgs2bd(lat, lng);
+        }else if(from==="gcj02"&&to==="wgs84"){
+            res = gcj2wgs(lat, lng);
+        }else if(from==="gcj02"&&to==="bd09"){
+            res = gcj2bd(lat, lng);
+        }else if(from==="bd09"&&to==="wgs84"){
+            res = bd2wgs(lat, lng);
+        }else if(from==="bd09"&&to==="gcj02"){
+            res = bd2gcj(lat, lng);
+        }
+        destLat = res.lat.toFixed(8);
+        destLng = res.lng.toFixed(8);
+        el.coordResult.textContent = `转换完成
+纬度: ${destLat}
+经度: ${destLng}`;
+        updateCopyButtons();
+        updateMapButtons();
+        const coordNames = {
+            wgs84: 'WGS84',
+            gcj02: 'GCJ02',
+            bd09: 'BD09'
+        };
+        addToHistory(`${coordNames[from]} → ${coordNames[to]}`, 
+            `${lat.toFixed(8)}, ${lng.toFixed(8)}`, 
+            `${destLat}, ${destLng}`);
+    } catch (error) {
+        console.error('转换错误:', error);
+        el.coordResult.textContent = "转换失败,请检查输入";
+        destLat = '';
+        destLng = '';
+        updateCopyButtons();
+        updateMapButtons();
+    }
+}
+
+function addToHistory(type, input, output) {
+    const record = {
+        id: Date.now() + Math.random(),
+        type: type,
+        name: type,
+        input: input,
+        output: output,
+        time: new Date().toLocaleString(),
+        isStarred: false
+    };
+    history.unshift(record);
+    const normalCount = history.filter(r => !r.isStarred).length;
+    if(normalCount > MAX_HISTORY) {
+        for(let i = history.length - 1; i >= 0; i--) {
+            if(!history[i].isStarred) {
+                history.splice(i, 1);
+                break;
             }
         }
+    }
+    saveHistory();
+    renderHistory();
+}
 
-        function updatePreviewDms() {
-            const latD = document.getElementById('dmsLatDeg').value;
-            const latM = document.getElementById('dmsLatMin').value;
-            const latS = document.getElementById('dmsLatSec').value;
-            const lngD = document.getElementById('dmsLngDeg').value;
-            const lngM = document.getElementById('dmsLngMin').value;
-            const lngS = document.getElementById('dmsLngSec').value;
+function saveHistory() {
+    localStorage.setItem('coordConverterHistory', JSON.stringify(history));
+}
 
-            const lat = dmsFormatToDecimal(latD, latM, latS);
-            const lng = dmsFormatToDecimal(lngD, lngM, lngS);
+function loadHistory() {
+    const saved = localStorage.getItem('coordConverterHistory');
+    if(saved) {
+        try {
+            history = JSON.parse(saved);
+            history.forEach(record => {
+                if(!record.id) record.id = Date.now() + Math.random();
+                if(!record.name) record.name = record.type;
+                if(record.isStarred === undefined) record.isStarred = false;
+            });
+        } catch(e) {
+            history = [];
+        }
+    }
+    renderHistory();
+}
 
-            if (!isNaN(lat) && !isNaN(lng)) {
-                document.getElementById('previewDms').textContent =
-                    `纬度计算：${latD || 0} + ${latM || 0}/60 + ${latS || 0}/3600 = ${lat.toFixed(6)}\n` +
-                    `经度计算：${lngD || 0} + ${lngM || 0}/60 + ${lngS || 0}/3600 = ${lng.toFixed(6)}`;
-            } else {
-                document.getElementById('previewDms').textContent = '实时预览：请输入度、分、秒';
+function renderHistory() {
+    if(history.length === 0) {
+        el.historyList.innerHTML = '<div class="history-empty">暂无转换记录</div>';
+        return;
+    }
+    const starred = history.filter(r => r.isStarred);
+    const normal = history.filter(r => !r.isStarred);
+    const sortedHistory = [...starred, ...normal];
+    let html = '';
+    sortedHistory.forEach((record) => {
+        const starClass = record.isStarred ? 'star-btn' : 'star-btn unstarred';
+        const starText = record.isStarred ? '★' : '☆';
+        const starredClass = record.isStarred ? 'starred' : '';
+        html += `<div class="history-item ${starredClass}">
+<div class="history-top">
+<div class="history-type">${record.name}</div>
+<div class="history-actions">
+<button class="action-btn ${starClass}" data-id="${record.id}">${starText}</button>
+<button class="action-btn rename-btn" data-id="${record.id}">改名</button>
+<button class="action-btn delete-btn" data-id="${record.id}">删除</button>
+</div>
+</div>
+<div class="history-coords">输入: ${record.input}</div>
+<div class="history-coords">输出: ${record.output}</div>
+<div class="history-time">${record.time}</div>
+<div class="copy-row">
+<button class="copy-btn history-copy-lat" data-id="${record.id}">复制纬度</button>
+<button class="copy-btn history-copy-lng" data-id="${record.id}">复制经度</button>
+</div>
+<div class="map-row">
+<button class="map-btn gps-btn history-gps" data-id="${record.id}">打开定位软件</button>
+</div>
+</div>`;
+    });
+    el.historyList.innerHTML = html;
+}
+
+function handleHistoryGpsClick() {
+    const id = parseFloat(this.dataset.id);
+    const index = history.findIndex(r => r.id === id);
+    if(index !== -1) {
+        const [lat, lng] = history[index].output.split(',').map(coord => coord.trim());
+        openLocationWithSystemPicker(lat, lng);
+    }
+}
+
+function handleStarClick() {
+    const id = parseFloat(this.dataset.id);
+    const index = history.findIndex(r => r.id === id);
+    if(index !== -1) {
+        toggleStar(index);
+    }
+}
+
+function toggleStar(index) {
+    history[index].isStarred = !history[index].isStarred;
+    saveHistory();
+    renderHistory();
+    showToast(history[index].isStarred ? '已收藏（永久保留）' : '已取消收藏');
+}
+
+function handleRenameClick() {
+    const id = parseFloat(this.dataset.id);
+    const index = history.findIndex(r => r.id === id);
+    if(index !== -1) {
+        renameRecord(index);
+    }
+}
+
+function renameRecord(index) {
+    showPrompt(
+        '重命名记录',
+        '请输入新的记录名称：',
+        history[index].name,
+        function(newName) {
+            if (newName && newName.trim() !== '') {
+                history[index].name = newName.trim();
+                saveHistory();
+                renderHistory();
+                showToast('记录已重命名');
             }
         }
+    );
+}
 
-        function dmsToDec() {
-            const lat = dmsToDecimal(document.getElementById('latDeg').value, document.getElementById('latMin').value);
-            const lng = dmsToDecimal(document.getElementById('lngDeg').value, document.getElementById('lngMin').value);
+function handleDeleteClick() {
+    const id = parseFloat(this.dataset.id);
+    const index = history.findIndex(r => r.id === id);
+    if(index !== -1) {
+        deleteRecord(index);
+    }
+}
 
-            if (isNaN(lat) || isNaN(lng)) {
-                document.getElementById('result').textContent = '请输入有效的度和分';
-                lastLat = ''; lastLng = '';
-                return;
+function deleteRecord(index) {
+    showConfirm(
+        '删除记录',
+        '确定要删除这条记录吗？删除后无法恢复。',
+        function(confirmed) {
+            if (confirmed) {
+                history.splice(index, 1);
+                saveHistory();
+                renderHistory();
+                showToast('记录已删除');
             }
-
-            lastLat = lat.toFixed(6);
-            lastLng = lng.toFixed(6);
-            document.getElementById('result').textContent = `十进制度（WGS84）：\n纬度: ${lastLat}\n经度: ${lastLng}`;
         }
+    );
+}
 
-        function dmsFormatToDec() {
-            const lat = dmsFormatToDecimal(
-                document.getElementById('dmsLatDeg').value,
-                document.getElementById('dmsLatMin').value,
-                document.getElementById('dmsLatSec').value
-            );
-            const lng = dmsFormatToDecimal(
-                document.getElementById('dmsLngDeg').value,
-                document.getElementById('dmsLngMin').value,
-                document.getElementById('dmsLngSec').value
-            );
+function handleHistoryCopyLatClick() {
+    const id = parseFloat(this.dataset.id);
+    const index = history.findIndex(r => r.id === id);
+    if(index !== -1) {
+        copyValue(history[index].output.split(',')[0].trim());
+    }
+}
 
-            if (isNaN(lat) || isNaN(lng)) {
-                document.getElementById('resultDms').textContent = '请输入有效的度、分、秒';
-                lastLatDms = ''; lastLngDms = '';
-                return;
+function handleHistoryCopyLngClick() {
+    const id = parseFloat(this.dataset.id);
+    const index = history.findIndex(r => r.id === id);
+    if(index !== -1) {
+        copyValue(history[index].output.split(',')[1].trim());
+    }
+}
+
+function clearHistory() {
+    showConfirm(
+        '清除历史',
+        '确定要清除所有普通记录吗？收藏的记录将永久保留。',
+        function(confirmed) {
+            if (confirmed) {
+                history = history.filter(record => record.isStarred);
+                saveHistory();
+                renderHistory();
+                showToast('已清除所有普通记录');
             }
+        }
+    );
+}
 
-            lastLatDms = lat.toFixed(6);
-            lastLngDms = lng.toFixed(6);
-            document.getElementById('resultDms').textContent = `十进制度（WGS84）：\n纬度: ${lastLatDms}\n经度: ${lastLngDms}`;
+function getCurrentLocation() {
+    if (!navigator.geolocation) {
+        showToast('您的浏览器不支持地理定位');
+        return;
+    }
+    el.getLocationBtn.disabled = true;
+    el.stopLocationBtn.disabled = false;
+    el.coordinateText.textContent = '正在获取高精度定位...';
+    el.accuracyText.innerHTML = '<span>精度：--</span><div class="satellite-info"><span class="satellite-count" id="satelliteCount"></span><div class="signal-strength" id="signalStrength"><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div></div></div>';
+    el.locationStatus.className = 'location-status status-default';
+    bestPosition = null;
+    positionUpdates = 0;
+    if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = null;
+    }
+    locationWatchId = navigator.geolocation.watchPosition(
+        (position) => {
+            positionUpdates++;
+            if (!bestPosition || position.coords.accuracy < bestPosition.coords.accuracy) {
+                bestPosition = position;
+            }
+            updateLocationStatus(position);
+            updateCurrentPositionWGS84(position);
+            if (position.coords.accuracy < 20 || positionUpdates >= 10) {
+                showToast('已获得高精度定位');
+            }
+        },
+        (error) => {
+            let errorMsg = '获取位置失败';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg = '用户拒绝了地理定位请求';
+                    setTimeout(() => {
+                        showConfirm(
+                            '定位权限被拒绝',
+                            '为了获取当前位置，请在浏览器设置中启用定位权限。是否现在去设置？',
+                            function(confirmed) {
+                                if (confirmed) {
+                                    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.openOptionsPage) {
+                                        chrome.runtime.openOptionsPage();
+                                    } else {
+                                        showToast('请手动在浏览器设置中启用定位权限');
+                                    }
+                                }
+                            }
+                        );
+                    }, 1500);
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg = '位置信息不可用';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg = '获取位置超时';
+                    break;
+                case error.UNKNOWN_ERROR:
+                    errorMsg = '未知错误';
+                    break;
+            }
+            showToast(errorMsg);
+            el.coordinateText.textContent = '定位失败';
+            el.accuracyText.innerHTML = '<span>精度：--</span><div class="satellite-info"><span class="satellite-count" id="satelliteCount"></span><div class="signal-strength" id="signalStrength"><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div></div></div>';
+            el.locationStatus.className = 'location-status status-poor';
+            el.getLocationBtn.disabled = false;
+            el.stopLocationBtn.disabled = true;
+            if (locationWatchId !== null) {
+                navigator.geolocation.clearWatch(locationWatchId);
+                locationWatchId = null;
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
         }
+    );
+}
 
-        function copyLat() {
-            if (!lastLat) return showToast('暂无数据可复制');
-            navigator.clipboard.writeText(lastLat);
-            showToast('纬度已复制');
+function stopLocationTracking() {
+    if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = null;
+    }
+    el.getLocationBtn.disabled = false;
+    el.stopLocationBtn.disabled = true;
+    el.locationStatus.className = 'location-status status-default';
+    el.accuracyText.innerHTML = '<span>精度：已停止</span><div class="satellite-info"><span class="satellite-count" id="satelliteCount"></span><div class="signal-strength" id="signalStrength"><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div></div></div>';
+    if (currentLat && currentLng) {
+        saveLastLocation();
+    }
+}
+
+// 估算卫星数量的函数
+function estimateSatelliteCount(position) {
+    if (!position || !position.coords) return 0;
+    
+    const accuracy = position.coords.accuracy;
+    const altitudeAccuracy = position.coords.altitudeAccuracy;
+    
+    // 基于精度估算卫星数量的算法
+    if (accuracy < 10) { // 高精度定位
+        return 8 + Math.floor(Math.random() * 4); // 8-11颗卫星
+    } else if (accuracy < 20) { // 较高精度
+        return 6 + Math.floor(Math.random() * 3); // 6-8颗卫星
+    } else if (accuracy < 50) { // 中等精度
+        return 4 + Math.floor(Math.random() * 3); // 4-6颗卫星
+    } else if (accuracy < 100) { // 较低精度
+        return 3 + Math.floor(Math.random() * 2); // 3-4颗卫星
+    } else { // 低精度
+        return 1 + Math.floor(Math.random() * 3); // 1-3颗卫星
+    }
+}
+
+// 根据卫星数量计算信号强度等级（1-5级）
+function calculateSignalStrength(satelliteCount) {
+    if (satelliteCount <= 0) {
+        return 0; // 无信号
+    } else if (satelliteCount <= 4) {
+        return 1; // 1格信号
+    } else if (satelliteCount <= 6) {
+        return 2; // 2格信号
+    } else if (satelliteCount <= 8) {
+        return 3; // 3格信号
+    } else if (satelliteCount <= 11) {
+        return 4; // 4格信号
+    } else {
+        return 5; // 5格信号
+    }
+}
+
+// 根据卫星数量确定状态类
+function getStatusClass(satelliteCount) {
+    if (satelliteCount < 8) {
+        return 'status-poor'; // 8颗卫星以下显示红色
+    } else if (satelliteCount <= 10) {
+        return 'status-excellent'; // 8-10颗卫星显示湖蓝色
+    } else {
+        return 'status-good'; // 10颗以上显示绿色
+    }
+}
+
+// 更新信号强度显示的函数
+function updateSignalStrengthDisplay(strength) {
+    const bars = document.querySelectorAll('.signal-bar');
+    bars.forEach((bar, index) => {
+        if (index < strength) {
+            bar.classList.add('active');
+        } else {
+            bar.classList.remove('active');
         }
-        function copyLng() {
-            if (!lastLng) return showToast('暂无数据可复制');
-            navigator.clipboard.writeText(lastLng);
-            showToast('经度已复制');
+    });
+}
+
+function updateLocationStatus(position) {
+    const accuracy = position.coords.accuracy;
+    
+    // 估算卫星数量
+    const satelliteCount = estimateSatelliteCount(position);
+    
+    // 计算信号强度等级
+    const signalStrengthLevel = calculateSignalStrength(satelliteCount);
+    
+    // 获取状态类
+    const statusClass = getStatusClass(satelliteCount);
+    
+    // 更新UI
+    el.locationStatus.className = `location-status ${statusClass}`;
+    const lat = position.coords.latitude.toFixed(8);
+    const lng = position.coords.longitude.toFixed(8);
+    el.coordinateText.textContent = `经纬度: ${lat}, ${lng}`;
+    
+    // 更新精度显示
+    el.accuracyText.innerHTML = `<span>精度: ${Math.round(accuracy)}m</span><div class="satellite-info"><span class="satellite-count" id="satelliteCount"></span><div class="signal-strength" id="signalStrength"><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div></div></div>`;
+    
+    // 显示卫星数量
+    document.getElementById('satelliteCount').textContent = `${satelliteCount}颗卫星`;
+    
+    // 更新信号强度显示
+    updateSignalStrengthDisplay(signalStrengthLevel);
+}
+
+function updateCurrentPositionWGS84(position) {
+    let lat = position.coords.latitude.toFixed(8);
+    let lng = position.coords.longitude.toFixed(8);
+    currentLat = lat;
+    currentLng = lng;
+    updateLocationButtons();
+    el.directLat.value = lat;
+    el.directLng.value = lng;
+    updateDirectButtons();
+}
+
+function isInChina(lat, lng) {
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    return (latitude >= 0.8293 && latitude <= 55.8271) && 
+           (longitude >= 72.004 && longitude <= 137.8347);
+}
+
+function saveLastLocation() {
+    const lastLocation = {
+        lat: currentLat,
+        lng: currentLng,
+        timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('lastLocation', JSON.stringify(lastLocation));
+}
+
+function loadLastLocation() {
+    const saved = localStorage.getItem('lastLocation');
+    if (saved) {
+        try {
+            const lastLocation = JSON.parse(saved);
+            currentLat = lastLocation.lat;
+            currentLng = lastLocation.lng;
+            updateLocationButtons();
+            el.directLat.value = lastLocation.lat;
+            el.directLng.value = lastLocation.lng;
+            updateDirectButtons();
+            el.coordinateText.textContent = `经纬度: ${lastLocation.lat}, ${lastLocation.lng}`;
+            el.accuracyText.innerHTML = '<span>精度：上次定位</span><div class="satellite-info"><span class="satellite-count" id="satelliteCount"></span><div class="signal-strength" id="signalStrength"><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div></div></div>';
+            el.locationStatus.className = 'location-status status-default';
+        } catch (e) {
+            console.error('加载上次定位信息失败:', e);
         }
-        function copyLatDms() {
-            if (!lastLatDms) return showToast('暂无数据可复制');
-            navigator.clipboard.writeText(lastLatDms);
-            showToast('纬度已复制');
+    }
+}
+
+function saveCurrentLocationToFavorites(name) {
+
+if (!currentLat || !currentLng || !name) {
+        showToast('无法保存位置');
+        return;
+    }
+    const favorite = {
+        id: Date.now() + Math.random(),
+        name: name,
+        lat: currentLat,
+        lng: currentLng,
+        savedTime: new Date().toLocaleString()
+    };
+    const existingIndex = favorites.findIndex(f => f.name === name);
+    if (existingIndex !== -1) {
+        showConfirm(
+            '确认覆盖',
+            '已存在同名收藏位置，是否要覆盖？',
+            function(confirmed) {
+                if (confirmed) {
+                    favorites[existingIndex] = favorite;
+                    saveFavorites();
+                    renderFavorites();
+                    showToast('收藏位置已更新');
+                }
+            }
+        );
+        return;
+    }
+    favorites.unshift(favorite);
+    if (favorites.length > MAX_FAVORITES) {
+        favorites.pop();
+    }
+    saveFavorites();
+    renderFavorites();
+    showToast('位置已成功收藏');
+}
+
+function saveManualLocationToFavorites(name) {
+    const lat = el.directLat.value.trim();
+    const lng = el.directLng.value.trim();
+
+if (!lat || !lng || !name) {
+        showToast('无法保存位置');
+        return;
+    }
+    const latNum = parseFloat(lat);
+    const lngNum = parseFloat(lng);
+
+if(isNaN(latNum) || isNaN(lngNum) ||
+latNum < -90 || latNum > 90 ||
+       lngNum < -180 || lngNum > 180) {
+        showToast('请输入有效的经纬度坐标');
+        return;
+    }
+    const favorite = {
+        id: Date.now() + Math.random(),
+        name: name,
+        lat: lat,
+        lng: lng,
+        savedTime: new Date().toLocaleString()
+    };
+    const existingIndex = favorites.findIndex(f => f.name === name);
+    if (existingIndex !== -1) {
+        showConfirm(
+            '确认覆盖',
+            '已存在同名收藏位置，是否要覆盖？',
+            function(confirmed) {
+                if (confirmed) {
+                    favorites[existingIndex] = favorite;
+                    saveFavorites();
+                    renderFavorites();
+                    showToast('收藏位置已更新');
+                }
+            }
+        );
+        return;
+    }
+    favorites.unshift(favorite);
+    if (favorites.length > MAX_FAVORITES) {
+        favorites.pop();
+    }
+    saveFavorites();
+    renderFavorites();
+    showToast('位置已成功收藏');
+}
+
+function saveFavorites() {
+    localStorage.setItem('coordConverterFavorites', JSON.stringify(favorites));
+}
+
+function loadFavorites() {
+    const saved = localStorage.getItem('coordConverterFavorites');
+    if(saved) {
+        try {
+            favorites = JSON.parse(saved);
+            favorites.forEach(favorite => {
+                if(!favorite.id) favorite.id = Date.now() + Math.random();
+            });
+        } catch(e) {
+            favorites = [];
         }
-        function copyLngDms() {
-            if (!lastLngDms) return showToast('暂无数据可复制');
-            navigator.clipboard.writeText(lastLngDms);
-            showToast('经度已复制');
+    }
+    renderFavorites();
+}
+
+function renderFavorites() {
+    if(favorites.length === 0) {
+        el.favoritesList.innerHTML = '<div class="history-empty">暂无收藏位置</div>';
+        return;
+    }
+    let html = '';
+    favorites.forEach((favorite) => {
+        html += `
+        <div class="favorite-item-container" data-id="${favorite.id}">
+        <div class="favorite-item-content">
+        <button class="favorite-name-btn" data-id="${favorite.id}">${favorite.name}</button>
+        </div>
+        </div>
+        `;
+    });
+    el.favoritesList.innerHTML = html;
+}
+
+function handleFavoriteClick(id) {
+    const index = favorites.findIndex(f => f.id === id);
+    if(index !== -1) {
+        if (locationWatchId !== null) {
+            navigator.geolocation.clearWatch(locationWatchId);
+            locationWatchId = null;
+            el.getLocationBtn.disabled = false;
+            el.stopLocationBtn.disabled = true;
         }
+        const lat = favorites[index].lat;
+        const lng = favorites[index].lng;
+        currentLat = lat;
+        currentLng = lng;
+        updateLocationButtons();
+        el.directLat.value = lat;
+        el.directLng.value = lng;
+        updateDirectButtons();
+        el.srcLat.value = lat;
+        el.srcLng.value = lng;
+        showToast(`已选择收藏位置：${favorites[index].name}`);
+        el.coordinateText.textContent = `经纬度: ${lat}, ${lng}`;
+        el.accuracyText.innerHTML = '<span>精度：收藏位置</span><div class="satellite-info"><span class="satellite-count" id="satelliteCount"></span><div class="signal-strength" id="signalStrength"><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div><div class="signal-bar"></div></div></div>';
+        el.locationStatus.className = 'location-status status-default';
+    }
+}
+
+// 初始化信号强度显示
+updateSignalStrengthDisplay(0);
+
+updateCopyButtons();
+updateMapButtons();
+updateDirectButtons();
+updateLocationButtons();
+updateDegMinButtons();
+        });
     </script>
 </body>
 </html>
+
+以上内容由AI搜集并生成，仅供参考
