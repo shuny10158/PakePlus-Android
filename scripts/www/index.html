@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>经纬度转换工具</title>
+    <title>经纬度转换</title>
     <style>
         /* 保持原有的CSS样式不变 */
         * {
@@ -654,6 +654,38 @@
         .favorites-list::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+        
+        /* 批量删除模态框样式 */
+        #batchDeleteModal .custom-modal-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .delete-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .delete-item:hover {
+            background-color: #e9ecef;
+        }
+        .delete-item input {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        .delete-item-name {
+            flex: 1;
+            font-weight: 500;
+        }
+        .delete-item-coords {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -722,7 +754,24 @@
             </div>
         </div>
     </div>
-    <h1>经纬度转换工具</h1>
+    <!-- 新增批量删除模态框 -->
+    <div class="custom-modal-overlay" id="batchDeleteModal">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title">批量删除收藏位置</h3>
+                <button class="custom-modal-close" id="batchDeleteClose">×</button>
+            </div>
+            <div class="custom-modal-body">
+                <div class="custom-modal-content">请选择要删除的收藏位置：</div>
+                <div id="batchDeleteList"></div>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="custom-modal-btn custom-modal-btn-secondary" id="batchDeleteCancel">取消</button>
+                <button class="custom-modal-btn custom-modal-btn-danger" id="batchDeleteOk">删除选中项</button>
+            </div>
+        </div>
+    </div>
+    <h1>经纬度转换</h1>
     <div class="container">
         <div class="section-title">GPS度分输入（遥控器格式）</div>
         <div class="input-container">
@@ -823,7 +872,10 @@
             <button class="copy-btn save-favorite-btn" id="saveManualLocationBtn" disabled tabindex="13">收藏输入坐标</button>
         </div>
         <div class="favorites-section">
-            <div class="favorites-title">收藏位置</div>
+            <div class="favorites-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div class="favorites-title">收藏位置</div>
+                <button class="custom-modal-btn custom-modal-btn-danger" style="width: auto; padding: 5px 10px; font-size: 12px;" id="batchDeleteBtn">批量删除</button>
+            </div>
             <div class="favorites-list" id="favoritesList">
                 <div class="history-empty">暂无收藏位置</div>
             </div>
@@ -994,7 +1046,6 @@
         
         // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
-    
             
             // 加载收藏数据
             loadFavorites();
@@ -1018,6 +1069,7 @@
             // 初始化信号强度显示
             updateSignalStrengthDisplay(0);
             
+        
         });
         
         // 初始化回车跳转功能
@@ -1168,6 +1220,9 @@
             
             // 事件委托处理动态内容
             setupEventDelegation();
+            
+            // 批量删除按钮事件
+            $('batchDeleteBtn').addEventListener('click', showBatchDeleteModal);
         }
         
         // 设置模态框事件
@@ -1215,12 +1270,18 @@
                 $('saveFavoriteModal').style.display = 'none';
                 const name = $('saveFavoriteName').value.trim();
                 if (window.saveFavoriteCallback) {
-                    // 自动编号逻辑
+                    // 自动编号逻辑：如果用户未输入名称，自动生成"位置N"
                     if (!name) {
-                        const maxNumber = Math.max(...favorites.map(f => {
-                            const match = f.name.match(/^位置(\d+)$/);
-                            return match ? parseInt(match[1]) : 0;
-                        }), 0);
+                        let maxNumber = 0;
+                        favorites.forEach(favorite => {
+                            const match = favorite.name.match(/^位置(\d+)$/);
+                            if (match) {
+                                const number = parseInt(match[1]);
+                                if (number > maxNumber) {
+                                    maxNumber = number;
+                                }
+                            }
+                        });
                         window.saveFavoriteCallback(`位置${maxNumber + 1}`);
                     } else {
                         window.saveFavoriteCallback(name);
@@ -1260,6 +1321,12 @@
                                     }), 0);
                                     favorite.name = `位置${maxNumber + 1}`;
                                 } else {
+                                    // 检查是否存在相同名称的收藏
+                                    const existingIndex = favorites.findIndex(f => f.name === newName.trim());
+                                    if (existingIndex !== -1 && favorites[existingIndex].id !== currentFavoriteId) {
+                                        showToast('无法重命名：已存在相同名称的收藏位置');
+                                        return;
+                                    }
                                     favorite.name = newName.trim();
                                 }
                                 saveFavorites();
@@ -1299,6 +1366,32 @@
             $('favoriteActionClose').addEventListener('click', function() {
                 $('favoriteActionModal').style.display = 'none';
                 currentFavoriteId = null;
+            });
+            
+            // 批量删除模态框事件
+            $('batchDeleteOk').addEventListener('click', function() {
+                $('batchDeleteModal').style.display = 'none';
+                const selectedItems = document.querySelectorAll('#batchDeleteList input:checked');
+                const idsToDelete = Array.from(selectedItems).map(item => item.value);
+                
+                if (idsToDelete.length === 0) {
+                    showToast('请选择要删除的收藏位置');
+                    return;
+                }
+                
+                // 从收藏列表中移除选中的项 - 修复类型不匹配问题
+                favorites = favorites.filter(favorite => !idsToDelete.includes(favorite.id.toString()));
+                saveFavorites();
+                initFavorites();
+                showToast(`已成功删除 ${idsToDelete.length} 个收藏位置`);
+            });
+            
+            $('batchDeleteCancel').addEventListener('click', function() {
+                $('batchDeleteModal').style.display = 'none';
+            });
+            
+            $('batchDeleteClose').addEventListener('click', function() {
+                $('batchDeleteModal').style.display = 'none';
             });
         }
         
@@ -1343,6 +1436,17 @@
                     if(index !== -1) {
                         const [lat, lng] = history[index].output.split(',').map(coord => coord.trim());
                         openLocationWithSystemPicker(lat, lng);
+                    }
+                }
+            });
+            
+            // 批量删除模态框的点击事件委托 - 点击条目区域切换勾选状态
+            $('batchDeleteList').addEventListener('click', function(e) {
+                const deleteItem = e.target.closest('.delete-item');
+                if (deleteItem) {
+                    const checkbox = deleteItem.querySelector('input[type="checkbox"]');
+                    if (checkbox && e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
                     }
                 }
             });
@@ -1456,10 +1560,9 @@
             // 显示警告信息
             const warning = $('duplicateWarning');
             warning.style.display = 'none';
-            warning.style.display = 'none';
             
-            // 禁用确定按钮
-            $('saveFavoriteOk').disabled = true;
+            // 启用确定按钮（允许空名称提交）
+            $('saveFavoriteOk').disabled = false;
             
             // 添加输入事件监听
             const nameInput = $('saveFavoriteName');
@@ -1475,24 +1578,39 @@
                 } else {
                     warning.style.display = 'none';
                 }
-                
-                // 启用或禁用确定按钮
-                $('saveFavoriteOk').disabled = !name || isDuplicate;
             });
             
             // 设置保存回调
             window.saveFavoriteCallback = function(name) {
-                if (name && name.trim() !== '') {
-                    // 检查是否存在相同名称的收藏
-                    const existingIndex = favorites.findIndex(f => f.name === name);
-                    if (existingIndex !== -1) {
-                        showToast('无法保存：已存在相同名称的收藏位置');
-                        return;
-                    }
-                    saveCurrentLocationToFavorites(name);
+                if (name === null) return;
+                
+                // 自动编号逻辑：如果用户未输入名称，自动生成"位置N"
+                let finalName = name;
+                if (!name || name.trim() === '') {
+                    let maxNumber = 0;
+                    favorites.forEach(favorite => {
+                        const match = favorite.name.match(/^位置(\d+)$/);
+                        if (match) {
+                            const number = parseInt(match[1]);
+                            if (number > maxNumber) {
+                                maxNumber = number;
+                            }
+                        }
+                    });
+                    finalName = `位置${maxNumber + 1}`;
                 } else {
-                    showToast('请输入收藏位置名称');
+                    finalName = name.trim();
                 }
+                
+                // 检查是否存在相同名称的收藏
+                const existingIndex = favorites.findIndex(f => f.name === finalName);
+                if (existingIndex !== -1) {
+                    showToast('无法保存：已存在相同名称的收藏位置');
+                    return;
+                }
+                
+                saveCurrentLocationToFavorites(finalName);
+                
                 // 移除事件监听
                 nameInput.removeEventListener('input', arguments.callee);
             };
@@ -1510,8 +1628,8 @@
             const warning = $('duplicateWarning');
             warning.style.display = 'none';
             
-            // 禁用确定按钮
-            $('saveFavoriteOk').disabled = true;
+            // 启用确定按钮（允许空名称提交）
+            $('saveFavoriteOk').disabled = false;
             
             // 添加输入事件监听
             const nameInput = $('saveFavoriteName');
@@ -1527,24 +1645,39 @@
                 } else {
                     warning.style.display = 'none';
                 }
-                
-                // 启用或禁用确定按钮
-                $('saveFavoriteOk').disabled = !name || isDuplicate;
             });
             
             // 设置保存回调
             window.saveFavoriteCallback = function(name) {
-                if (name && name.trim() !== '') {
-                    // 检查是否存在相同名称的收藏
-                    const existingIndex = favorites.findIndex(f => f.name === name);
-                    if (existingIndex !== -1) {
-                        showToast('无法保存：已存在相同名称的收藏位置');
-                        return;
-                    }
-                    saveManualLocationToFavorites(name);
+                if (name === null) return;
+                
+                // 自动编号逻辑：如果用户未输入名称，自动生成"位置N"
+                let finalName = name;
+                if (!name || name.trim() === '') {
+                    let maxNumber = 0;
+                    favorites.forEach(favorite => {
+                        const match = favorite.name.match(/^位置(\d+)$/);
+                        if (match) {
+                            const number = parseInt(match[1]);
+                            if (number > maxNumber) {
+                                maxNumber = number;
+                            }
+                        }
+                    });
+                    finalName = `位置${maxNumber + 1}`;
                 } else {
-                    showToast('请输入收藏位置名称');
+                    finalName = name.trim();
                 }
+                
+                // 检查是否存在相同名称的收藏
+                const existingIndex = favorites.findIndex(f => f.name === finalName);
+                if (existingIndex !== -1) {
+                    showToast('无法保存：已存在相同名称的收藏位置');
+                    return;
+                }
+                
+                saveManualLocationToFavorites(finalName);
+                
                 // 移除事件监听
                 nameInput.removeEventListener('input', arguments.callee);
             };
@@ -1590,35 +1723,36 @@
             }
             const latNum = parseFloat(lat);
             const lngNum = parseFloat(lng);
+            
 
 
 if(isNaN(latNum) || isNaN(lngNum) ||
 latNum < -90 || latNum > 90 ||
-                   lngNum < -180 || lngNum > 180) {
-                    showToast('请输入有效的经纬度坐标');
-                    return;
+               lngNum < -180 || lngNum > 180) {
+                showToast('请输入有效的经纬度坐标');
+                return;
+            }
+            const targetCoordSystem = $('coordSystem').value;
+            let targetLat, targetLng;
+            if (targetCoordSystem === 'gcj02') {
+                const gcjCoords = wgs2gcj(latNum, lngNum);
+                targetLat = gcjCoords.lat.toFixed(8);
+                targetLng = gcjCoords.lng.toFixed(8);
+            } else if (targetCoordSystem === 'bd09') {
+                const bdCoords = wgs2bd(latNum, lngNum);
+                targetLat = bdCoords.lat.toFixed(8);
+                targetLng = bdCoords.lng.toFixed(8);
+            } else {
+                targetLat = lat;
+                targetLng = lng;
+                if (targetCoordSystem === 'auto') {
+                    showToast('正在进行地图匹配优化...');
                 }
-                const targetCoordSystem = $('coordSystem').value;
-                let targetLat, targetLng;
-                if (targetCoordSystem === 'gcj02') {
-                    const gcjCoords = wgs2gcj(latNum, lngNum);
-                    targetLat = gcjCoords.lat.toFixed(8);
-                    targetLng = gcjCoords.lng.toFixed(8);
-                } else if (targetCoordSystem === 'bd09') {
-                    const bdCoords = wgs2bd(latNum, lngNum);
-                    targetLat = bdCoords.lat.toFixed(8);
-                    targetLng = bdCoords.lng.toFixed(8);
-                } else {
-                    targetLat = lat;
-                    targetLng = lng;
-                    if (targetCoordSystem === 'auto') {
-                        showToast('正在进行地图匹配优化...');
-                    }
-                }
-                openLocationWithSystemPicker(targetLat, targetLng);
-                addToHistory('WGS84直接打开', 
-                    `${lat}, ${lng}`, 
-                    `${targetLat}, ${targetLng}`);
+            }
+            openLocationWithSystemPicker(targetLat, targetLng);
+            addToHistory('WGS84直接打开', 
+                `${lat}, ${lng}`, 
+                `${targetLat}, ${targetLng}`);
         }
         
         // 更新按钮状态
@@ -1731,9 +1865,9 @@ latNum < -90 || latNum > 90 ||
 
 $('preview').textContent = `纬度计算：${latD||0} + ${latM||0}/60 = ${lat.toFixed(8)}
 经度计算：${lngD||0} + ${lngM||0}/60 = ${lng.toFixed(8)}`;
-                } else {
-                    $('preview').textContent = '实时预览：请输入有效的数字';
-                }
+            } else {
+                $('preview').textContent = '实时预览：请输入有效的数字';
+            }
         }
         
         function updatePreviewDms() {
@@ -1762,9 +1896,9 @@ $('preview').textContent = `纬度计算：${latD||0} + ${latM||0}/60 = ${lat.to
 
 $('previewDms').textContent = `纬度计算：${latD||0} + ${latM||0}/60 + ${latS||0}/3600 = ${lat.toFixed(8)}
 经度计算：${lngD||0} + ${lngM||0}/60 + ${lngS||0}/3600 = ${lng.toFixed(8)}`;
-                } else {
-                    $('previewDms').textContent = '实时预览：请输入有效的数字';
-                }
+            } else {
+                $('previewDms').textContent = '实时预览：请输入有效的数字';
+            }
         }
         
         function dmsToDec() {
@@ -1778,26 +1912,27 @@ $('previewDms').textContent = `纬度计算：${latD||0} + ${latM||0}/60 + ${lat
             }
             const lat = dmsToDecimal($('latDeg').value, $('latMin').value);
             const lng = dmsToDecimal($('lngDeg').value, $('lngMin').value);
+            
 
 
 if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
-                    $('result').textContent = '请输入有效的度和分';
-                    lastLat = '';
-                    lastLng = '';
-                    updateCopyButtons();
-                    updateMapButtons();
-                    return;
-                }
-                lastLat = lat.toFixed(8);
-                lastLng = lng.toFixed(8);
-                $('result').textContent = `十进制度（WGS84）：
-纬度: ${lastLat}
-经度: ${lastLng}`;
+                $('result').textContent = '请输入有效的度和分';
+                lastLat = '';
+                lastLng = '';
                 updateCopyButtons();
                 updateMapButtons();
-                addToHistory('度分 → WGS84', 
-                    `${$('latDeg').value}°${$('latMin').value}'`, 
-                    `${lastLat}, ${lastLng}`);
+                return;
+            }
+            lastLat = lat.toFixed(8);
+            lastLng = lng.toFixed(8);
+            $('result').textContent = `十进制度（WGS84）：
+纬度: ${lastLat}
+经度: ${lastLng}`;
+            updateCopyButtons();
+            updateMapButtons();
+            addToHistory('度分 → WGS84', 
+                `${$('latDeg').value}°${$('latMin').value}'`, 
+                `${lastLat}, ${lastLng}`);
         }
         
         function dmsFormatToDec() {
@@ -1820,26 +1955,27 @@ if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
                 $('dmsLngMin').value,
                 $('dmsLngSec').value
             );
+            
 
 
 if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
-                    $('resultDms').textContent = '请输入有效的度、分、秒';
-                    lastLatDms = '';
-                    lastLngDms = '';
-                    updateCopyButtons();
-                    updateMapButtons();
-                    return;
-                }
-                lastLatDms = lat.toFixed(8);
-                lastLngDms = lng.toFixed(8);
-                $('resultDms').textContent = `十进制度（WGS84）：
-纬度: ${lastLatDms}
-经度: ${lastLngDms}`;
+                $('resultDms').textContent = '请输入有效的度、分、秒';
+                lastLatDms = '';
+                lastLngDms = '';
                 updateCopyButtons();
                 updateMapButtons();
-                addToHistory('度分秒 → WGS84', 
-                    `${$('dmsLatDeg').value}°${$('dmsLatMin').value}'${$('dmsLatSec').value}"`, 
-                    `${lastLatDms}, ${lastLngDms}`);
+                return;
+            }
+            lastLatDms = lat.toFixed(8);
+            lastLngDms = lng.toFixed(8);
+            $('resultDms').textContent = `十进制度（WGS84）：
+纬度: ${lastLatDms}
+经度: ${lastLngDms}`;
+            updateCopyButtons();
+            updateMapButtons();
+            addToHistory('度分秒 → WGS84', 
+                `${$('dmsLatDeg').value}°${$('dmsLatMin').value}'${$('dmsLatSec').value}"`, 
+                `${lastLatDms}, ${lastLngDms}`);
         }
         
         function wgs84ToDegMin() {
@@ -1851,37 +1987,38 @@ if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
             }
             const latNum = parseFloat(lat);
             const lngNum = parseFloat(lng);
+            
 
 
 if(isNaN(latNum) || isNaN(lngNum) ||
 latNum < -90 || latNum > 90 ||
-                   lngNum < -180 || lngNum > 180) {
-                    showToast('请输入有效的经纬度坐标');
-                    return;
-                }
-                const latAbs = Math.abs(latNum);
-                const latDeg = Math.floor(latAbs);
-                const latMin = (latAbs - latDeg) * 60;
-                const latMinRounded = latMin.toFixed(4);
-                const latDirection = latNum >= 0 ? 'N' : 'S';
-                const latDegMin = `${latDeg}°${latMinRounded}'${latDirection}`;
-                
-                const lngAbs = Math.abs(lngNum);
-                const lngDeg = Math.floor(lngAbs);
-                const lngMin = (lngAbs - lngDeg) * 60;
-                const lngMinRounded = lngMin.toFixed(4);
-                const lngDirection = lngNum >= 0 ? 'E' : 'W';
-                const lngDegMin = `${lngDeg}°${lngMinRounded}'${lngDirection}`;
-                
-                degMinLat = `${latDeg}°${latMinRounded}'`;
-                degMinLng = `${lngDeg}°${lngMinRounded}'`;
-                $('degMinResult').textContent = `度分格式：
+               lngNum < -180 || lngNum > 180) {
+                showToast('请输入有效的经纬度坐标');
+                return;
+            }
+            const latAbs = Math.abs(latNum);
+            const latDeg = Math.floor(latAbs);
+            const latMin = (latAbs - latDeg) * 60;
+            const latMinRounded = latMin.toFixed(4);
+            const latDirection = latNum >= 0 ? 'N' : 'S';
+            const latDegMin = `${latDeg}°${latMinRounded}'${latDirection}`;
+            
+            const lngAbs = Math.abs(lngNum);
+            const lngDeg = Math.floor(lngAbs);
+            const lngMin = (lngAbs - lngDeg) * 60;
+            const lngMinRounded = lngMin.toFixed(4);
+            const lngDirection = lngNum >= 0 ? 'E' : 'W';
+            const lngDegMin = `${lngDeg}°${lngMinRounded}'${lngDirection}`;
+            
+            degMinLat = `${latDeg}°${latMinRounded}'`;
+            degMinLng = `${lngDeg}°${lngMinRounded}'`;
+            $('degMinResult').textContent = `度分格式：
 纬度: ${latDegMin}
 经度: ${lngDegMin}`;
-                updateDegMinButtons();
-                addToHistory('WGS84 → 度分', 
-                    `${lat}, ${lng}`, 
-                    `${latDegMin}, ${lngDegMin}`);
+            updateDegMinButtons();
+            addToHistory('WGS84 → 度分', 
+                `${lat}, ${lng}`, 
+                `${latDegMin}, ${lngDegMin}`);
         }
         
         function copyValue(value) {
@@ -2485,71 +2622,73 @@ latNum < -90 || latNum > 90 ||
 
 
 if (!currentLat || !currentLng || !name) {
-                    showToast('无法保存位置');
-                    return;
-                }
-                const favorite = {
-                    id: Date.now() + Math.random(),
-                    name: name,
-                    lat: currentLat,
-                    lng: currentLng,
-                    savedTime: new Date().toLocaleString()
-                };
-                // 检查是否存在相同名称的收藏
-                const existingIndex = favorites.findIndex(f => f.name === name);
-                if (existingIndex !== -1) {
-                    showToast('无法保存：已存在相同名称的收藏位置');
-                    return;
-                }
-                favorites.unshift(favorite);
-                if (favorites.length > MAX_FAVORITES) {
-                    favorites.pop();
-                }
-                saveFavorites();
-                initFavorites();
-                showToast('位置已成功收藏');
+                showToast('无法保存位置');
+                return;
+            }
+            const favorite = {
+                id: Date.now() + Math.random(),
+                name: name,
+                lat: currentLat,
+                lng: currentLng,
+                savedTime: new Date().toLocaleString()
+            };
+            // 检查是否存在相同名称的收藏
+            const existingIndex = favorites.findIndex(f => f.name === name);
+            if (existingIndex !== -1) {
+                showToast('无法保存：已存在相同名称的收藏位置');
+                return;
+            }
+            favorites.unshift(favorite);
+            if (favorites.length > MAX_FAVORITES) {
+                favorites.pop();
+            }
+            saveFavorites();
+            initFavorites();
+            showToast('位置已成功收藏');
         }
         
         // 保存手动输入的位置到收藏
         function saveManualLocationToFavorites(name) {
             const lat = $('directLat').value.trim();
             const lng = $('directLng').value.trim();
+            
 
 
 if (!lat || !lng || !name) {
-                    showToast('无法保存位置');
-                    return;
-                }
-                const latNum = parseFloat(lat);
-                const lngNum = parseFloat(lng);
+                showToast('无法保存位置');
+                return;
+            }
+            const latNum = parseFloat(lat);
+            const lngNum = parseFloat(lng);
+            
 
 
 if(isNaN(latNum) || isNaN(lngNum) ||
 latNum < -90 || latNum > 90 ||
-                   lngNum < -180 || lngNum > 180) {
-                    showToast('请输入有效的经纬度坐标');
-                    return;
-                }
-                const favorite = {
-                    id: Date.now() + Math.random(),
-                    name: name,
-                    lat: lat,
-                    lng: lng,
-                    savedTime: new Date().toLocaleString()
-                };
-                // 检查是否存在相同名称的收藏
-                const existingIndex = favorites.findIndex(f => f.name === name);
-                if (existingIndex !== -1) {
-                    showToast('无法保存：已存在相同名称的收藏位置');
-                    return;
-                }
-                favorites.unshift(favorite);
-                if (favorites.length > MAX_FAVORITES) {
-                    favorites.pop();
-                }
-                saveFavorites();
-                initFavorites();
-                showToast('位置已成功收藏');
+               lngNum < -180 || lngNum > 180) {
+                showToast('请输入有效的经纬度坐标');
+                return;
+            }
+            const favorite = {
+                id: Date.now() + Math.random(),
+                name: name,
+                lat: lat,
+                lng: lng,
+                savedTime: new Date().toLocaleString()
+            };
+            // 检查是否存在相同名称的收藏
+            const existingIndex = favorites.findIndex(f => f.name === name);
+            if (existingIndex !== -1) {
+                showToast('无法保存：已存在相同名称的收藏位置');
+                return;
+            }
+            favorites.unshift(favorite);
+            if (favorites.length > MAX_FAVORITES) {
+                favorites.pop();
+            }
+            saveFavorites();
+            initFavorites();
+            showToast('位置已成功收藏');
         }
         
         // 保存收藏到本地存储
@@ -2589,6 +2728,32 @@ latNum < -90 || latNum > 90 ||
             $('srcLng').value = favorite.lng;
             
             showToast(`已加载收藏位置：${favorite.name}`);
+        }
+        
+        // 显示批量删除模态框
+        function showBatchDeleteModal() {
+            if (favorites.length === 0) {
+                showToast('暂无收藏位置可删除');
+                return;
+            }
+            
+            const batchDeleteList = $('batchDeleteList');
+            batchDeleteList.innerHTML = '';
+            
+            favorites.forEach(favorite => {
+                const deleteItem = document.createElement('div');
+                deleteItem.className = 'delete-item';
+                deleteItem.innerHTML = `
+                    <input type="checkbox" value="${favorite.id}">
+                    <div class="delete-item-details">
+                        <div class="delete-item-name">${favorite.name}</div>
+                        <div class="delete-item-coords">${favorite.lat}, ${favorite.lng}</div>
+                    </div>
+                `;
+                batchDeleteList.appendChild(deleteItem);
+            });
+            
+            $('batchDeleteModal').style.display = 'flex';
         }
     </script>
 </body>
